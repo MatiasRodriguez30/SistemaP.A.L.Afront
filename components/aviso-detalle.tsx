@@ -1,0 +1,195 @@
+"use client"
+
+import { Aviso } from "@/types/avisos"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { 
+  Building2, 
+  User, 
+  Calendar, 
+  GraduationCap, 
+  Tag, 
+  ArrowLeft, 
+  Send, 
+  CalendarPlus,
+  Image as ImageIcon
+} from "lucide-react"
+
+interface AvisoDetalleProps {
+  aviso: Aviso
+  onRegresar: () => void
+  onPostular: (nroAviso: number) => void
+}
+
+export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProps) {
+  return (
+    <Card className="max-w-4xl mx-auto">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">Aviso #{aviso.nroAviso}</p>
+            <h2 className="text-2xl font-bold">{aviso.nombreAviso}</h2>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        {/* Imagen del Aviso */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <ImageIcon className="h-4 w-4" />
+            Imagen del Aviso
+          </div>
+          <div className="relative w-full h-64 rounded-lg overflow-hidden bg-muted">
+            <img 
+              src={aviso.imagenUrlAviso} 
+              alt={aviso.nombreAviso}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Descripción */}
+        <div className="space-y-2">
+          <h3 className="font-semibold">Descripción</h3>
+          <p className="text-muted-foreground leading-relaxed">
+            {aviso.descripcionAviso}
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Información de la Empresa y Reclutador */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Empresa</p>
+                <p className="font-medium">{aviso.empresa.nombreEmpresa}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Reclutador</p>
+                <p className="font-medium">{aviso.reclutador.nombreReclutador}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Fechas */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+              <CalendarPlus className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Fecha de Creación</p>
+              <p className="font-medium">
+                {new Date(aviso.fechaCreacionAviso).toLocaleDateString("es-AR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                })}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Fecha de Cierre</p>
+              <p className="font-medium">
+                {new Date(aviso.fechaCierreAviso).toLocaleDateString("es-AR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                })}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Carreras */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">Carreras Relacionadas</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {aviso.carreras.map((carrera, index) => (
+              <Badge key={index} variant="secondary" className="px-3 py-1">
+                {carrera.nombreCarrera}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Tipos y SubTipos de Aviso */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Tag className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">Tipos de Aviso</h3>
+          </div>
+          <div className="space-y-4">
+            {aviso.tiposAviso.map((tipo, index) => (
+              <div key={index}>
+                <p className="text-sm font-medium text-foreground mb-2">
+                  {tipo.nombreTipoAviso}
+                </p>
+                {tipo.subTipos.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {tipo.subTipos.map((subTipo, subIndex) => (
+                      <Badge key={subIndex} variant="secondary" className="px-3 py-1">
+                        {subTipo.nombreSubTipoAviso}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
+        <Button 
+          variant="outline" 
+          className="w-full sm:w-auto"
+          onClick={onRegresar}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Regresar
+        </Button>
+        <Button 
+          className="w-full sm:w-auto"
+          onClick={() => onPostular(aviso.nroAviso)}
+        >
+          <Send className="mr-2 h-4 w-4" />
+          Postular
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
