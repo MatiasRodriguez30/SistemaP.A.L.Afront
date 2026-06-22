@@ -1,6 +1,7 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { avisosMock, verificarPostulacion, enviarPostulacion, postulanteMock } from "@/data/avisos-mock"
 import { AvisoCard } from "@/components/aviso-card"
 import { AvisoDetalle } from "@/components/aviso-detalle"
@@ -13,8 +14,10 @@ import { Label } from "@/components/ui/label"
 import Image from "next/image"
 
 type Vista = "lista" | "detalle" | "salir" | "formulario_postulacion" | "resultado_postulacion"
+const SESSION_KEY = "pala-auth-session"
 
 export default function VerAvisosPage() {
+  const router = useRouter()
   const [vista, setVista] = useState<Vista>("lista")
   const [avisoSeleccionado, setAvisoSeleccionado] = useState<number | null>(null)
   const [mensaje, setMensaje] = useState<string | null>(null)
@@ -23,7 +26,7 @@ export default function VerAvisosPage() {
   const [descripcionPostulacion, setDescripcionPostulacion] = useState<string>("")
   const [urlCVGuardado, setUrlCVGuardado] = useState<string>("")
 
-  // Simular usuario logueado (Postulante verificado)
+  // La home de la maqueta queda publica para demo.
   const usuarioLogueado = postulanteMock.fechaBajaPostulante === null
 
   if (!usuarioLogueado) {
@@ -62,10 +65,10 @@ export default function VerAvisosPage() {
     setDescripcionPostulacion("")
   }
 
-  // Paso 3: Iniciar proceso de postulación - verificar y mostrar formulario
+  // Paso 3: Iniciar proceso de postulacion - verificar y mostrar formulario
   const handlePostular = (nroAviso: number) => {
     const resultado = verificarPostulacion(nroAviso)
-    
+
     if (resultado.puedePostular) {
       // 3.10 Mostrar formulario para ingresar datos
       setUrlCVGuardado(resultado.urlCVGuardado)
@@ -74,31 +77,33 @@ export default function VerAvisosPage() {
     } else {
       // Mostrar error (C.A 1, 2 o 3)
       setMensaje(resultado.mensaje)
-      setRequiereCV('requiereCV' in resultado && resultado.requiereCV === true)
+      setRequiereCV("requiereCV" in resultado && resultado.requiereCV === true)
       setPostulacionExitosa(false)
       setVista("resultado_postulacion")
     }
   }
 
-  // Paso 4 y 5: Usuario ingresa descripción y se envía la postulación
+  // Paso 4 y 5: Usuario ingresa descripcion y se envia la postulacion
   const handleEnviarPostulacion = () => {
     if (!avisoSeleccionado) return
-    
+
     const resultado = enviarPostulacion(avisoSeleccionado, descripcionPostulacion)
-    
+
     setMensaje(resultado.mensaje)
     setPostulacionExitosa(resultado.exito)
     setVista("resultado_postulacion")
   }
 
   const handleSalir = () => {
+    window.localStorage.removeItem(SESSION_KEY)
     setVista("salir")
-    setMensaje("Ha salido del sistema correctamente.")
+    setMensaje("Sesion finalizada correctamente.")
+    setTimeout(() => router.replace("/login"), 500)
   }
 
   const avisoActual = avisosMock.find(a => a.nroAviso === avisoSeleccionado)
 
-  // Vista: Sesión finalizada
+  // Vista: Sesion finalizada
   if (vista === "salir") {
     return (
       <main className="min-h-screen bg-background p-6 flex items-center justify-center">
@@ -111,7 +116,7 @@ export default function VerAvisosPage() {
     )
   }
 
-  // Vista: Formulario de postulación (Paso 3.10 y 4)
+  // Vista: Formulario de postulacion (Paso 3.10 y 4)
   if (vista === "formulario_postulacion" && avisoActual) {
     return (
       <main className="min-h-screen bg-background">
@@ -168,7 +173,7 @@ export default function VerAvisosPage() {
                 <p className="text-sm text-muted-foreground">{urlCVGuardado.split('/').pop()}</p>
               </div>
 
-              {/* Campo para descripción/presentación */}
+              {/* Campo para descripcion/presentacion */}
               <div className="space-y-2">
                 <Label htmlFor="descripcion">Escriba una presentacion para la oferta:</Label>
                 <Textarea
@@ -176,17 +181,13 @@ export default function VerAvisosPage() {
                   placeholder="Escriba aqui su presentacion..."
                   value={descripcionPostulacion}
                   onChange={(e) => setDescripcionPostulacion(e.target.value)}
-                  rows={5}
+                  rows={6}
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex gap-3">
-              <Button variant="outline" onClick={handleRegresarADetalle}>
-                Cancelar
-              </Button>
-              <Button onClick={handleEnviarPostulacion}>
-                Enviar Postulacion
-              </Button>
+            <CardFooter className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={handleRegresarADetalle}>Cancelar</Button>
+              <Button onClick={handleEnviarPostulacion}>Enviar postulacion</Button>
             </CardFooter>
           </Card>
         </div>
@@ -194,43 +195,12 @@ export default function VerAvisosPage() {
     )
   }
 
-  // Vista: Resultado de postulación
+  // Vista: Resultado de postulacion
   if (vista === "resultado_postulacion") {
     return (
-      <main className="min-h-screen bg-background p-6 flex items-center justify-center">
-        <div className="space-y-4 max-w-md w-full">
-          <Alert variant={postulacionExitosa ? "default" : "destructive"}>
-            {postulacionExitosa ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              <AlertCircle className="h-4 w-4" />
-            )}
-            <AlertTitle>{postulacionExitosa ? "Postulacion enviada!" : "Error en la postulacion"}</AlertTitle>
-            <AlertDescription>{mensaje}</AlertDescription>
-          </Alert>
-          
-          <div className="flex gap-2">
-            {requiereCV && (
-              <Button onClick={() => alert("Redirigiendo a CU SubirCV...")}>
-                Subir CV
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleRegresar}>
-              Volver a avisos
-            </Button>
-          </div>
-        </div>
-      </main>
-    )
-  }
-
-  return (
-    <main className="min-h-screen bg-background">
-      {/* Header Global */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
+      <main className="min-h-screen bg-background">
+        <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <Image 
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MbHWicyzFpcawRts6FlDbCJo6uW7ES.png"
               alt="PALA - Plataforma de Acceso Laboral para Alumnos"
@@ -238,9 +208,69 @@ export default function VerAvisosPage() {
               height={60}
               className="h-12 w-auto object-contain"
             />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleSalir}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Salir</span>
+            </Button>
           </div>
+        </header>
 
-          {/* Navegación derecha */}
+        <div className="max-w-2xl mx-auto p-6">
+          <Alert variant={postulacionExitosa ? "default" : "destructive"}>
+            {postulacionExitosa ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+            <AlertTitle>{postulacionExitosa ? "Postulacion enviada" : "No se pudo postular"}</AlertTitle>
+            <AlertDescription>{mensaje}</AlertDescription>
+          </Alert>
+
+          {requiereCV && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Accion requerida</CardTitle>
+                <CardDescription>Debe cargar un CV antes de postularse.</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
+          <div className="mt-6 flex gap-2 justify-end">
+            <Button variant="outline" onClick={handleRegresar}>Volver al listado</Button>
+            {avisoSeleccionado && postulacionExitosa === false && !requiereCV && (
+              <Button onClick={() => handlePostular(avisoSeleccionado)}>Intentar nuevamente</Button>
+            )}
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  // Vista: Detalle del aviso
+  if (vista === "detalle" && avisoActual) {
+    return (
+      <AvisoDetalle
+        aviso={avisoActual}
+        onVolver={handleRegresar}
+        onPostular={() => handlePostular(avisoActual.nroAviso)}
+        onSalir={handleSalir}
+      />
+    )
+  }
+
+  // Vista: Lista de avisos
+  return (
+    <main className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Image 
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MbHWicyzFpcawRts6FlDbCJo6uW7ES.png"
+            alt="PALA - Plataforma de Acceso Laboral para Alumnos"
+            width={120}
+            height={60}
+            className="h-12 w-auto object-contain"
+          />
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
@@ -266,46 +296,24 @@ export default function VerAvisosPage() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto p-6">
-        {/* Título de la sección */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">Ver Avisos</h1>
-          <p className="text-muted-foreground">
-            Avisos de empleo disponibles
-          </p>
+      <section className="max-w-6xl mx-auto p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Avisos disponibles</h1>
+          <p className="text-muted-foreground mt-1">Explorá oportunidades y revisá el detalle de cada publicación.</p>
         </div>
 
-        {vista === "lista" && (
-          <>
-            {/* Mensaje de instrucción */}
-            <Alert className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Seleccione un aviso que quiera visualizar
-              </AlertDescription>
-            </Alert>
-
-            {/* Lista de Avisos */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {avisosMock.map((aviso) => (
-                <AvisoCard 
-                  key={aviso.nroAviso} 
-                  aviso={aviso} 
-                  onSelect={handleSeleccionarAviso}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {vista === "detalle" && avisoActual && (
-          <AvisoDetalle
-            aviso={avisoActual}
-            onRegresar={handleRegresar}
-            onPostular={handlePostular}
-          />
-        )}
-      </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {avisosMock.map((aviso) => (
+            <AvisoCard
+              key={aviso.nroAviso}
+              aviso={aviso}
+              onVerDetalle={() => handleSeleccionarAviso(aviso.nroAviso)}
+            />
+          ))}
+        </div>
+      </section>
     </main>
   )
 }
+
+
