@@ -16,6 +16,10 @@ export function getSession(): AuthResponse | null {
   }
 }
 
+export function saveSession(session: AuthResponse) {
+  window.localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+}
+
 export function clearSession() {
   window.localStorage.removeItem(SESSION_KEY)
 }
