@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -196,9 +196,17 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     const rolesNormalizados = authResponse.roles.map((role) => role.toUpperCase())
     const esAdministrador = rolesNormalizados.includes("ADMINISTRADOR")
     const esPostulante = rolesNormalizados.includes("POSTULANTE")
+    const esReclutador = rolesNormalizados.includes("RECLUTADOR")
 
     if (esAdministrador) {
       router.push(authResponse.perfilCompleto ? "/admin" : "/admin/perfil-inicial")
+      return
+    }
+
+    // Si el postulante o reclutador aun no tiene perfil local en PALA,
+    // lo enviamos a la pantalla de completado de perfil.
+    if (!authResponse.perfilCompleto && (esPostulante || esReclutador)) {
+      router.push("/perfil-inicial")
       return
     }
 
