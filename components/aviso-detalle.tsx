@@ -5,31 +5,33 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { 
-  Building2, 
-  User, 
-  Calendar, 
-  GraduationCap, 
-  Tag, 
-  ArrowLeft, 
-  Send, 
+import {
+  Building2,
+  User,
+  Calendar,
+  GraduationCap,
+  Tag,
+  ArrowLeft,
+  Send,
   CalendarPlus,
   Image as ImageIcon
 } from "lucide-react"
+import { CARRERA_BADGE_CLASS, avisoAccentBarClass, tipoAvisoBadgeClass } from "@/lib/aviso-colors"
 
 interface AvisoDetalleProps {
   aviso: Aviso
   onRegresar: () => void
   onPostular: (nroAviso: number) => void
+  postularDisabled?: boolean
 }
 
-export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProps) {
+export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }: AvisoDetalleProps) {
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-4xl mx-auto overflow-hidden">
+      <div className={`h-1.5 w-full bg-gradient-to-r ${avisoAccentBarClass(aviso.nroAviso)}`} />
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Aviso #{aviso.nroAviso}</p>
             <h2 className="text-2xl font-bold">{aviso.nombreAviso}</h2>
           </div>
         </div>
@@ -67,8 +69,8 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProp
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Empresa</p>
@@ -79,8 +81,8 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProp
 
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 rounded-full bg-violet-100 dark:bg-violet-950 flex items-center justify-center">
+                <User className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Reclutador</p>
@@ -132,12 +134,12 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProp
         {/* Carreras */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-primary" />
+            <GraduationCap className="h-5 w-5 text-indigo-500" />
             <h3 className="font-semibold">Carreras Relacionadas</h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {aviso.carreras.map((carrera, index) => (
-              <Badge key={index} variant="secondary" className="px-3 py-1">
+              <Badge key={index} variant="outline" className={`px-3 py-1 ${CARRERA_BADGE_CLASS}`}>
                 {carrera.nombreCarrera}
               </Badge>
             ))}
@@ -149,7 +151,7 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProp
         {/* Tipos y SubTipos de Aviso */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Tag className="h-5 w-5 text-primary" />
+            <Tag className="h-5 w-5 text-fuchsia-500" />
             <h3 className="font-semibold">Tipos de Aviso</h3>
           </div>
           <div className="space-y-4">
@@ -161,7 +163,11 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProp
                 {tipo.subTipos.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {tipo.subTipos.map((subTipo, subIndex) => (
-                      <Badge key={subIndex} variant="secondary" className="px-3 py-1">
+                      <Badge
+                        key={subIndex}
+                        variant="outline"
+                        className={`px-3 py-1 ${tipoAvisoBadgeClass(tipo.nombreTipoAviso)}`}
+                      >
                         {subTipo.nombreSubTipoAviso}
                       </Badge>
                     ))}
@@ -174,20 +180,26 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular }: AvisoDetalleProp
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full sm:w-auto"
           onClick={onRegresar}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Regresar
         </Button>
-        <Button 
-          className="w-full sm:w-auto"
+        <Button
+          className={`w-full sm:w-auto ${
+            postularDisabled
+              ? ""
+              : "bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 border-0 text-white"
+          }`}
           onClick={() => onPostular(aviso.nroAviso)}
+          disabled={postularDisabled}
+          title={postularDisabled ? "Disponible próximamente" : undefined}
         >
           <Send className="mr-2 h-4 w-4" />
-          Postular
+          {postularDisabled ? "Disponible próximamente" : "Postular"}
         </Button>
       </CardFooter>
     </Card>

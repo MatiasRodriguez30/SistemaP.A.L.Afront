@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { SiteFooter } from "@/components/site-footer"
+import { SiteNavbar } from "@/components/site-navbar"
 
 type AuthMode = "login" | "register" | "verify" | "forgot" | "reset"
 
@@ -104,20 +106,6 @@ function getResponseMessage(body: unknown, fallback: string) {
   return fallback
 }
 
-function LoginHeader() {
-  return (
-    <header className="border-b bg-white">
-      <div className="mx-auto flex h-16 max-w-6xl items-center px-6">
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MbHWicyzFpcawRts6FlDbCJo6uW7ES.png"
-          alt="PALA"
-          className="h-10 w-auto object-contain"
-        />
-      </div>
-    </header>
-  )
-}
-
 export function AuthScreen({ initialMode }: AuthScreenProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<AuthMode>(initialMode)
@@ -195,7 +183,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     <button
       type="button"
       onClick={onToggle}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-900"
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-indigo-600"
       aria-label={label}
     >
       {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -215,7 +203,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     }
 
     if (esPostulante || authResponse.permisos.includes("VER_AVISOS")) {
-      router.push("/")
+      router.push("/avisos")
     }
   }
 
@@ -456,14 +444,20 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f8fb]">
-      <LoginHeader />
+    <main className="min-h-screen bg-background">
+      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
 
-      <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-start justify-center px-6 py-12 lg:items-center lg:px-8">
-        <Card className="w-full max-w-2xl rounded-[2rem] border border-slate-200/80 bg-white shadow-xl shadow-slate-200/60">
+      <SiteNavbar />
+
+      <section className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-start justify-center overflow-hidden px-6 py-12 lg:items-center lg:px-8">
+        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-[40rem] rounded-full bg-gradient-to-br from-indigo-400/25 via-fuchsia-400/20 to-amber-300/15 blur-3xl" />
+
+        <Card className="relative w-full max-w-2xl rounded-[2rem] border border-indigo-100 shadow-xl shadow-indigo-100/60">
           <CardHeader className="space-y-2 pb-2">
-            <CardTitle className="text-3xl font-semibold tracking-tight text-slate-900">Iniciar sesion</CardTitle>
-            <CardDescription className="text-base leading-6 text-slate-600">
+            <CardTitle className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+              Iniciar sesión
+            </CardTitle>
+            <CardDescription className="text-base leading-6 text-muted-foreground">
               Acceda con su cuenta o registre un nuevo usuario segun el rol correspondiente.
             </CardDescription>
           </CardHeader>
@@ -487,9 +481,9 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
             {activeTab === "verify" ? (
               <form className="space-y-5" onSubmit={handleVerifySubmit}>
-                <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                  <p className="text-sm font-semibold text-slate-900">Verificacion de correo</p>
-                  <p className="text-sm leading-6 text-slate-600">
+                <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+                  <p className="text-sm font-semibold text-foreground">Verificacion de correo</p>
+                  <p className="text-sm leading-6 text-muted-foreground">
                     Ingresa el codigo que enviamos a {pendingMail || "tu correo"}.
                   </p>
                 </div>
@@ -502,13 +496,17 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     value={verifyForm.codigo}
                     onChange={(event) => setVerifyForm({ codigo: event.target.value })}
                     placeholder="123456"
-                    className="h-11 border-slate-200 bg-slate-50"
+                    className="h-11"
                     required
                   />
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
-                  <Button type="submit" disabled={submitting} className="h-11 rounded-xl">
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="h-11 rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                  >
                     {submitting ? "Verificando..." : "Verificar correo"}
                   </Button>
                   <Button type="button" variant="outline" disabled={submitting} onClick={handleResendVerification} className="h-11 rounded-xl">
@@ -522,9 +520,9 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
               </form>
             ) : activeTab === "forgot" ? (
               <form className="space-y-5" onSubmit={handleForgotPasswordSubmit}>
-                <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                  <p className="text-sm font-semibold text-slate-900">Recuperar contrasena</p>
-                  <p className="text-sm leading-6 text-slate-600">Te enviaremos un codigo para cambiar tu contrasena.</p>
+                <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+                  <p className="text-sm font-semibold text-foreground">Recuperar contrasena</p>
+                  <p className="text-sm leading-6 text-muted-foreground">Te enviaremos un codigo para cambiar tu contrasena.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -535,12 +533,16 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     value={recoveryForm.mailUsuario}
                     onChange={(event) => setRecoveryForm((current) => ({ ...current, mailUsuario: event.target.value }))}
                     placeholder="usuario@dominio.com"
-                    className="h-11 border-slate-200 bg-slate-50"
+                    className="h-11"
                     required
                   />
                 </div>
 
-                <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                >
                   {submitting ? "Enviando..." : "Enviar codigo"}
                 </Button>
 
@@ -550,9 +552,9 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
               </form>
             ) : activeTab === "reset" ? (
               <form className="space-y-5" onSubmit={handleResetPasswordSubmit}>
-                <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                  <p className="text-sm font-semibold text-slate-900">Nueva contrasena</p>
-                  <p className="text-sm leading-6 text-slate-600">
+                <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+                  <p className="text-sm font-semibold text-foreground">Nueva contrasena</p>
+                  <p className="text-sm leading-6 text-muted-foreground">
                     Ingresa el codigo enviado a {pendingMail || recoveryForm.mailUsuario}.
                   </p>
                 </div>
@@ -565,7 +567,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     value={recoveryForm.codigo}
                     onChange={(event) => setRecoveryForm((current) => ({ ...current, codigo: event.target.value }))}
                     placeholder="123456"
-                    className="h-11 border-slate-200 bg-slate-50"
+                    className="h-11"
                     required
                   />
                 </div>
@@ -579,7 +581,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                         type={showRecoveryPassword ? "text" : "password"}
                         value={recoveryForm.nuevaPassword}
                         onChange={(event) => setRecoveryForm((current) => ({ ...current, nuevaPassword: event.target.value }))}
-                        className="h-11 border-slate-200 bg-slate-50 pr-10"
+                        className="h-11 pr-10"
                         required
                       />
                       <PasswordToggle
@@ -598,7 +600,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                         type={showRecoveryConfirmPassword ? "text" : "password"}
                         value={recoveryForm.confirmarNuevaPassword}
                         onChange={(event) => setRecoveryForm((current) => ({ ...current, confirmarNuevaPassword: event.target.value }))}
-                        className="h-11 border-slate-200 bg-slate-50 pr-10"
+                        className="h-11 pr-10"
                         required
                       />
                       <PasswordToggle
@@ -610,7 +612,11 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   </div>
                 </div>
 
-                <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                >
                   {submitting ? "Actualizando..." : "Cambiar contrasena"}
                 </Button>
               </form>
@@ -623,11 +629,17 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                 }}
                 className="gap-5"
               >
-              <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
-                <TabsTrigger value="login" className="rounded-xl py-2.5">
+              <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-indigo-50 p-1">
+                <TabsTrigger
+                  value="login"
+                  className="rounded-xl py-2.5 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300"
+                >
                   Ingresar
                 </TabsTrigger>
-                <TabsTrigger value="register" className="rounded-xl py-2.5">
+                <TabsTrigger
+                  value="register"
+                  className="rounded-xl py-2.5 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300"
+                >
                   Registrarse
                 </TabsTrigger>
               </TabsList>
@@ -637,14 +649,14 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   <div className="space-y-2">
                     <Label htmlFor="login-mail">Mail</Label>
                     <div className="relative">
-                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400" />
                       <Input
                         id="login-mail"
                         type="email"
                         value={loginForm.mailUsuario}
                         onChange={(event) => setLoginForm((current) => ({ ...current, mailUsuario: event.target.value }))}
                         placeholder="usuario@dominio.com"
-                        className="h-11 border-slate-200 bg-slate-50 pl-10"
+                        className="h-11 pl-10"
                         required
                       />
                     </div>
@@ -653,14 +665,14 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Contrasena</Label>
                     <div className="relative">
-                      <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-400" />
                       <Input
                         id="login-password"
                         type={showLoginPassword ? "text" : "password"}
                         value={loginForm.passwordUsuario}
                         onChange={(event) => setLoginForm((current) => ({ ...current, passwordUsuario: event.target.value }))}
                         placeholder="Ingrese su contrasena"
-                        className="h-11 border-slate-200 bg-slate-50 pl-10 pr-10"
+                        className="h-11 pl-10 pr-10"
                         required
                       />
                       <PasswordToggle
@@ -671,7 +683,11 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                  >
                     {submitting ? "Ingresando..." : "Iniciar sesion"}
                   </Button>
 
@@ -683,9 +699,9 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
               <TabsContent value="register">
                 <div className="space-y-4">
-                  <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                    <p className="text-sm font-semibold text-slate-900">{currentRoleCopy.title}</p>
-                    <p className="text-sm leading-6 text-slate-600">{currentRoleCopy.description}</p>
+                  <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+                    <p className="text-sm font-semibold text-foreground">{currentRoleCopy.title}</p>
+                    <p className="text-sm leading-6 text-muted-foreground">{currentRoleCopy.description}</p>
                   </div>
 
                   <form className="space-y-5" onSubmit={handleRegisterSubmit}>
@@ -696,13 +712,13 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                           <button
                             type="button"
                             onClick={() => updateRegisterField("rolSolicitado", "POSTULANTE")}
-                            className={`rounded-2xl border p-4 text-left transition ${registerForm.rolSolicitado === "POSTULANTE" ? "border-slate-900 bg-slate-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"}`}
+                            className={`rounded-2xl border p-4 text-left transition ${registerForm.rolSolicitado === "POSTULANTE" ? "border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white shadow-sm" : "border-border bg-muted/30 text-foreground hover:border-indigo-300"}`}
                           >
                             <div className="flex items-start gap-3">
-                              <GraduationCap className={`mt-0.5 h-5 w-5 ${registerForm.rolSolicitado === "POSTULANTE" ? "text-white" : "text-slate-700"}`} />
+                              <GraduationCap className={`mt-0.5 h-5 w-5 ${registerForm.rolSolicitado === "POSTULANTE" ? "text-white" : "text-indigo-500"}`} />
                               <div className="space-y-1">
                                 <p className="text-sm font-semibold">Postulante</p>
-                                <p className={`text-sm ${registerForm.rolSolicitado === "POSTULANTE" ? "text-slate-200" : "text-slate-600"}`}>
+                                <p className={`text-sm ${registerForm.rolSolicitado === "POSTULANTE" ? "text-white/80" : "text-muted-foreground"}`}>
                                   Para explorar avisos y postularte.
                                 </p>
                               </div>
@@ -712,13 +728,13 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                           <button
                             type="button"
                             onClick={() => updateRegisterField("rolSolicitado", "RECLUTADOR")}
-                            className={`rounded-2xl border p-4 text-left transition ${registerForm.rolSolicitado === "RECLUTADOR" ? "border-slate-900 bg-slate-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"}`}
+                            className={`rounded-2xl border p-4 text-left transition ${registerForm.rolSolicitado === "RECLUTADOR" ? "border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white shadow-sm" : "border-border bg-muted/30 text-foreground hover:border-indigo-300"}`}
                           >
                             <div className="flex items-start gap-3">
-                              <BriefcaseBusiness className={`mt-0.5 h-5 w-5 ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-white" : "text-slate-700"}`} />
+                              <BriefcaseBusiness className={`mt-0.5 h-5 w-5 ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-white" : "text-violet-500"}`} />
                               <div className="space-y-1">
                                 <p className="text-sm font-semibold">Reclutador</p>
-                                <p className={`text-sm ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-slate-200" : "text-slate-600"}`}>
+                                <p className={`text-sm ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-white/80" : "text-muted-foreground"}`}>
                                   Para publicar avisos y gestionar postulaciones.
                                 </p>
                               </div>
@@ -735,7 +751,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                           value={registerForm.mailUsuario}
                           onChange={(event) => updateRegisterField("mailUsuario", event.target.value)}
                           placeholder="usuario@dominio.com"
-                          className="h-11 border-slate-200 bg-slate-50"
+                          className="h-11"
                           required
                         />
                       </div>
@@ -748,7 +764,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                             type={showRegisterPassword ? "text" : "password"}
                             value={registerForm.passwordUsuario}
                             onChange={(event) => updateRegisterField("passwordUsuario", event.target.value)}
-                            className="h-11 border-slate-200 bg-slate-50 pr-10"
+                            className="h-11 pr-10"
                             required
                           />
                           <PasswordToggle
@@ -767,7 +783,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                             type={showRegisterConfirmPassword ? "text" : "password"}
                             value={registerForm.confirmarPassword}
                             onChange={(event) => updateRegisterField("confirmarPassword", event.target.value)}
-                            className="h-11 border-slate-200 bg-slate-50 pr-10"
+                            className="h-11 pr-10"
                             required
                           />
                           <PasswordToggle
@@ -786,7 +802,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               id="register-reclutador-nombre"
                               value={registerForm.nombreReclutador}
                               onChange={(event) => updateRegisterField("nombreReclutador", event.target.value)}
-                              className="h-11 border-slate-200 bg-slate-50"
+                              className="h-11"
                               required
                             />
                           </div>
@@ -798,7 +814,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               value={registerForm.cuilReclutador}
                               onChange={(event) => updateRegisterField("cuilReclutador", event.target.value)}
                               placeholder="20-12345678-3"
-                              className="h-11 border-slate-200 bg-slate-50"
+                              className="h-11"
                               required
                             />
                           </div>
@@ -810,7 +826,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               value={registerForm.descripcionReclutador}
                               onChange={(event) => updateRegisterField("descripcionReclutador", event.target.value)}
                               placeholder="Descripcion breve del perfil"
-                              className="min-h-24 border-slate-200 bg-slate-50"
+                              className="min-h-24"
                             />
                           </div>
                         </>
@@ -822,7 +838,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               id="register-postulante-nombre"
                               value={registerForm.nombrePostulante}
                               onChange={(event) => updateRegisterField("nombrePostulante", event.target.value)}
-                              className="h-11 border-slate-200 bg-slate-50"
+                              className="h-11"
                               required
                             />
                           </div>
@@ -833,7 +849,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               id="register-postulante-apellido"
                               value={registerForm.apellidoPostulante}
                               onChange={(event) => updateRegisterField("apellidoPostulante", event.target.value)}
-                              className="h-11 border-slate-200 bg-slate-50"
+                              className="h-11"
                               required
                             />
                           </div>
@@ -845,7 +861,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               type="date"
                               value={registerForm.fechaNacimientoPostulante}
                               onChange={(event) => updateRegisterField("fechaNacimientoPostulante", event.target.value)}
-                              className="h-11 border-slate-200 bg-slate-50"
+                              className="h-11"
                             />
                           </div>
 
@@ -856,7 +872,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               inputMode="numeric"
                               value={registerForm.legajoAcademicoPostulante}
                               onChange={(event) => updateRegisterField("legajoAcademicoPostulante", event.target.value)}
-                              className="h-11 border-slate-200 bg-slate-50"
+                              className="h-11"
                               required
                             />
                           </div>
@@ -864,7 +880,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                           <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="register-postulante-tipo">Tipo de estudiante</Label>
                             <Select value={registerForm.tipoEstudianteId} onValueChange={(value) => updateRegisterField("tipoEstudianteId", value)}>
-                              <SelectTrigger id="register-postulante-tipo" className="h-11 w-full border-slate-200 bg-slate-50">
+                              <SelectTrigger id="register-postulante-tipo" className="h-11 w-full">
                                 <SelectValue placeholder={tiposLoading ? "Cargando tipos..." : "Seleccione un tipo"} />
                               </SelectTrigger>
                               <SelectContent>
@@ -880,7 +896,11 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                       )}
 
                       <div className="md:col-span-2">
-                        <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                        <Button
+                          type="submit"
+                          disabled={submitting}
+                          className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                        >
                           {submitting ? "Registrando..." : "Crear cuenta"}
                         </Button>
                       </div>
@@ -893,6 +913,8 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      <SiteFooter />
     </main>
   )
 }

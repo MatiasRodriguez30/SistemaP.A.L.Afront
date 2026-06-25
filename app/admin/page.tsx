@@ -97,7 +97,7 @@ export default function AdminHomePage() {
             <CardContent className="space-y-4">
               {puedeVerAvisos ? (
                 <Link
-                  href="/"
+                  href="/avisos"
                   className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-100"
                 >
                   <span>Ver avisos</span>

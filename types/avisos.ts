@@ -67,3 +67,25 @@ export interface Postulacion {
   postulante: Postulante
   aviso: Aviso
 }
+
+// Shapes reales devueltas por el backend (AvisoController), distintas a las del mock.
+export interface AvisoTipoApi {
+  nombreTipoAviso: string
+  subTiposAviso: string[]
+}
+
+export interface AvisoResumenApi {
+  id: number
+  nombreAviso: string
+  descripcionAviso: string
+  fechaCierreAviso: string
+  razonSocialEmpresa: string
+  nombreReclutador: string
+  carreras: string[]
+  tiposAviso: AvisoTipoApi[]
+}
+
+export interface AvisoDetalleApi extends AvisoResumenApi {
+  fechaCreacionAviso: string
+  imagenUrlAviso: string
+}
