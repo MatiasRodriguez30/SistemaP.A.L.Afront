@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AlertCircle, BriefcaseBusiness, GraduationCap, KeyRound, Mail, ShieldCheck } from "lucide-react"
 
-import type { AuthResponse, ErrorResponse, PalaRol, TipoEstudianteOption } from "@/types/auth"
+import type { AuthRegisterStartResponse, AuthResponse, ErrorResponse, MessageResponse, PalaRol, TipoEstudianteOption } from "@/types/auth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
-type AuthMode = "login" | "register"
+type AuthMode = "login" | "register" | "verify" | "forgot" | "reset"
 
 interface AuthScreenProps {
   initialMode: AuthMode
@@ -40,6 +40,17 @@ interface RegisterFormState {
   tipoEstudianteId: string
 }
 
+interface VerifyFormState {
+  codigo: string
+}
+
+interface RecoveryFormState {
+  mailUsuario: string
+  codigo: string
+  nuevaPassword: string
+  confirmarNuevaPassword: string
+}
+
 const SESSION_KEY = "pala-auth-session"
 
 const emptyLoginForm: LoginFormState = {
@@ -62,6 +73,17 @@ const emptyRegisterForm: RegisterFormState = {
   tipoEstudianteId: "",
 }
 
+const emptyVerifyForm: VerifyFormState = {
+  codigo: "",
+}
+
+const emptyRecoveryForm: RecoveryFormState = {
+  mailUsuario: "",
+  codigo: "",
+  nuevaPassword: "",
+  confirmarNuevaPassword: "",
+}
+
 async function readResponseBody<T>(response: Response): Promise<T | ErrorResponse> {
   const contentType = response.headers.get("content-type") ?? ""
 
@@ -71,6 +93,15 @@ async function readResponseBody<T>(response: Response): Promise<T | ErrorRespons
 
   const text = await response.text()
   return { mensaje: text || "No se pudo completar la operacion." }
+}
+
+function getResponseMessage(body: unknown, fallback: string) {
+  if (body && typeof body === "object") {
+    const payload = body as ErrorResponse & MessageResponse
+    return payload.mensaje ?? payload.message ?? payload.error ?? fallback
+  }
+
+  return fallback
 }
 
 function LoginHeader() {
@@ -92,6 +123,10 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
   const [activeTab, setActiveTab] = useState<AuthMode>(initialMode)
   const [loginForm, setLoginForm] = useState<LoginFormState>(emptyLoginForm)
   const [registerForm, setRegisterForm] = useState<RegisterFormState>(emptyRegisterForm)
+  const [verifyForm, setVerifyForm] = useState<VerifyFormState>(emptyVerifyForm)
+  const [recoveryForm, setRecoveryForm] = useState<RecoveryFormState>(emptyRecoveryForm)
+  const [pendingRegisterPayload, setPendingRegisterPayload] = useState<object | null>(null)
+  const [pendingMail, setPendingMail] = useState("")
   const [tiposEstudiante, setTiposEstudiante] = useState<TipoEstudianteOption[]>([])
   const [tiposLoading, setTiposLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -160,6 +195,31 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     }
   }
 
+  const buildRegisterPayload = () =>
+    registerForm.rolSolicitado === "RECLUTADOR"
+      ? {
+          mailUsuario: registerForm.mailUsuario,
+          passwordUsuario: registerForm.passwordUsuario,
+          rolSolicitado: registerForm.rolSolicitado,
+          reclutador: {
+            nombreReclutador: registerForm.nombreReclutador,
+            cuilReclutador: registerForm.cuilReclutador,
+            descripcionReclutador: registerForm.descripcionReclutador || null,
+          },
+        }
+      : {
+          mailUsuario: registerForm.mailUsuario,
+          passwordUsuario: registerForm.passwordUsuario,
+          rolSolicitado: registerForm.rolSolicitado,
+          postulante: {
+            nombrePostulante: registerForm.nombrePostulante,
+            apellidoPostulante: registerForm.apellidoPostulante,
+            fechaNacimientoPostulante: registerForm.fechaNacimientoPostulante || null,
+            legajoAcademicoPostulante: Number(registerForm.legajoAcademicoPostulante),
+            tipoEstudianteId: Number(registerForm.tipoEstudianteId),
+          },
+        }
+
   const handleLoginSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     clearFeedback()
@@ -174,7 +234,12 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
       const body = await readResponseBody<AuthResponse>(response)
       if (!response.ok) {
-        throw new Error("mensaje" in body && body.mensaje ? body.mensaje : "No se pudo iniciar sesion")
+        const message = getResponseMessage(body, "No se pudo iniciar sesion")
+        if (message.toLowerCase().includes("correo") && message.toLowerCase().includes("verificado")) {
+          setPendingMail(loginForm.mailUsuario)
+          setActiveTab("verify")
+        }
+        throw new Error(message)
       }
 
       persistSession(body as AuthResponse)
@@ -204,30 +269,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     setSubmitting(true)
 
     try {
-      const payload =
-        registerForm.rolSolicitado === "RECLUTADOR"
-          ? {
-              mailUsuario: registerForm.mailUsuario,
-              passwordUsuario: registerForm.passwordUsuario,
-              rolSolicitado: registerForm.rolSolicitado,
-              reclutador: {
-                nombreReclutador: registerForm.nombreReclutador,
-                cuilReclutador: registerForm.cuilReclutador,
-                descripcionReclutador: registerForm.descripcionReclutador || null,
-              },
-            }
-          : {
-              mailUsuario: registerForm.mailUsuario,
-              passwordUsuario: registerForm.passwordUsuario,
-              rolSolicitado: registerForm.rolSolicitado,
-              postulante: {
-                nombrePostulante: registerForm.nombrePostulante,
-                apellidoPostulante: registerForm.apellidoPostulante,
-                fechaNacimientoPostulante: registerForm.fechaNacimientoPostulante || null,
-                legajoAcademicoPostulante: Number(registerForm.legajoAcademicoPostulante),
-                tipoEstudianteId: Number(registerForm.tipoEstudianteId),
-              },
-            }
+      const payload = buildRegisterPayload()
 
       const response = await fetch("/api/pala/auth/register", {
         method: "POST",
@@ -235,16 +277,155 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
         body: JSON.stringify(payload),
       })
 
+      const body = await readResponseBody<AuthRegisterStartResponse>(response)
+      if (!response.ok) {
+        throw new Error(getResponseMessage(body, "No se pudo registrar el usuario"))
+      }
+
+      const registerResponse = body as AuthRegisterStartResponse
+      setPendingRegisterPayload(payload)
+      setPendingMail(registerResponse.mailUsuario || registerForm.mailUsuario)
+      setVerifyForm(emptyVerifyForm)
+      setActiveTab("verify")
+      setSuccessMessage(registerResponse.message || "Enviamos un codigo de verificacion a tu correo.")
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo completar el registro")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleVerifySubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    clearFeedback()
+
+    if (!pendingRegisterPayload) {
+      setErrorMessage("Para verificar el registro, primero completa el formulario de registro.")
+      setActiveTab("register")
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const response = await fetch("/api/pala/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mailUsuario: pendingMail,
+          codigo: verifyForm.codigo,
+          registro: pendingRegisterPayload,
+        }),
+      })
+
       const body = await readResponseBody<AuthResponse>(response)
       if (!response.ok) {
-        throw new Error("mensaje" in body && body.mensaje ? body.mensaje : "No se pudo registrar el usuario")
+        throw new Error(getResponseMessage(body, "No se pudo verificar el correo"))
       }
 
       persistSession(body as AuthResponse)
       setRegisterForm(emptyRegisterForm)
-      setSuccessMessage("Registro completado correctamente.")
+      setVerifyForm(emptyVerifyForm)
+      setPendingRegisterPayload(null)
+      setPendingMail("")
+      setSuccessMessage("Correo verificado correctamente.")
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "No se pudo completar el registro")
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo verificar el correo")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    clearFeedback()
+
+    if (!pendingMail) {
+      setErrorMessage("No hay un correo pendiente de verificacion.")
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const response = await fetch("/api/pala/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mailUsuario: pendingMail }),
+      })
+
+      const body = await readResponseBody<MessageResponse>(response)
+      if (!response.ok) {
+        throw new Error(getResponseMessage(body, "No se pudo reenviar el codigo"))
+      }
+
+      setSuccessMessage(getResponseMessage(body, "Enviamos un nuevo codigo de verificacion."))
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo reenviar el codigo")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleForgotPasswordSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    clearFeedback()
+    setSubmitting(true)
+
+    try {
+      const response = await fetch("/api/pala/auth/password/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mailUsuario: recoveryForm.mailUsuario }),
+      })
+
+      const body = await readResponseBody<MessageResponse>(response)
+      if (!response.ok) {
+        throw new Error(getResponseMessage(body, "No se pudo enviar el codigo de recuperacion"))
+      }
+
+      setPendingMail(recoveryForm.mailUsuario)
+      setActiveTab("reset")
+      setSuccessMessage(getResponseMessage(body, "Si el correo existe, enviaremos un codigo para recuperar la contrasena."))
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo iniciar la recuperacion")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleResetPasswordSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    clearFeedback()
+
+    if (recoveryForm.nuevaPassword !== recoveryForm.confirmarNuevaPassword) {
+      setErrorMessage("La confirmacion de contrasena no coincide.")
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const response = await fetch("/api/pala/auth/password/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mailUsuario: pendingMail || recoveryForm.mailUsuario,
+          codigo: recoveryForm.codigo,
+          nuevaPassword: recoveryForm.nuevaPassword,
+        }),
+      })
+
+      const body = await readResponseBody<MessageResponse>(response)
+      if (!response.ok) {
+        throw new Error(getResponseMessage(body, "No se pudo actualizar la contrasena"))
+      }
+
+      setRecoveryForm(emptyRecoveryForm)
+      setPendingMail("")
+      setActiveTab("login")
+      setSuccessMessage(getResponseMessage(body, "La contrasena fue actualizada correctamente."))
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo actualizar la contrasena")
     } finally {
       setSubmitting(false)
     }
@@ -280,14 +461,130 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
               </Alert>
             )}
 
-            <Tabs
-              value={activeTab}
-              onValueChange={(value) => {
-                clearFeedback()
-                setActiveTab(value as AuthMode)
-              }}
-              className="gap-5"
-            >
+            {activeTab === "verify" ? (
+              <form className="space-y-5" onSubmit={handleVerifySubmit}>
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <p className="text-sm font-semibold text-slate-900">Verificacion de correo</p>
+                  <p className="text-sm leading-6 text-slate-600">
+                    Ingresa el codigo que enviamos a {pendingMail || "tu correo"}.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="verify-code">Codigo</Label>
+                  <Input
+                    id="verify-code"
+                    inputMode="numeric"
+                    value={verifyForm.codigo}
+                    onChange={(event) => setVerifyForm({ codigo: event.target.value })}
+                    placeholder="123456"
+                    className="h-11 border-slate-200 bg-slate-50"
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Button type="submit" disabled={submitting} className="h-11 rounded-xl">
+                    {submitting ? "Verificando..." : "Verificar correo"}
+                  </Button>
+                  <Button type="button" variant="outline" disabled={submitting} onClick={handleResendVerification} className="h-11 rounded-xl">
+                    Reenviar codigo
+                  </Button>
+                </div>
+
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setActiveTab("register")}>
+                  Volver al registro
+                </Button>
+              </form>
+            ) : activeTab === "forgot" ? (
+              <form className="space-y-5" onSubmit={handleForgotPasswordSubmit}>
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <p className="text-sm font-semibold text-slate-900">Recuperar contrasena</p>
+                  <p className="text-sm leading-6 text-slate-600">Te enviaremos un codigo para cambiar tu contrasena.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-mail">Mail</Label>
+                  <Input
+                    id="forgot-mail"
+                    type="email"
+                    value={recoveryForm.mailUsuario}
+                    onChange={(event) => setRecoveryForm((current) => ({ ...current, mailUsuario: event.target.value }))}
+                    placeholder="usuario@dominio.com"
+                    className="h-11 border-slate-200 bg-slate-50"
+                    required
+                  />
+                </div>
+
+                <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                  {submitting ? "Enviando..." : "Enviar codigo"}
+                </Button>
+
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setActiveTab("login")}>
+                  Volver al inicio de sesion
+                </Button>
+              </form>
+            ) : activeTab === "reset" ? (
+              <form className="space-y-5" onSubmit={handleResetPasswordSubmit}>
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <p className="text-sm font-semibold text-slate-900">Nueva contrasena</p>
+                  <p className="text-sm leading-6 text-slate-600">
+                    Ingresa el codigo enviado a {pendingMail || recoveryForm.mailUsuario}.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="reset-code">Codigo</Label>
+                  <Input
+                    id="reset-code"
+                    inputMode="numeric"
+                    value={recoveryForm.codigo}
+                    onChange={(event) => setRecoveryForm((current) => ({ ...current, codigo: event.target.value }))}
+                    placeholder="123456"
+                    className="h-11 border-slate-200 bg-slate-50"
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-password">Nueva contrasena</Label>
+                    <Input
+                      id="reset-password"
+                      type="password"
+                      value={recoveryForm.nuevaPassword}
+                      onChange={(event) => setRecoveryForm((current) => ({ ...current, nuevaPassword: event.target.value }))}
+                      className="h-11 border-slate-200 bg-slate-50"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-confirm-password">Confirmar contrasena</Label>
+                    <Input
+                      id="reset-confirm-password"
+                      type="password"
+                      value={recoveryForm.confirmarNuevaPassword}
+                      onChange={(event) => setRecoveryForm((current) => ({ ...current, confirmarNuevaPassword: event.target.value }))}
+                      className="h-11 border-slate-200 bg-slate-50"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                  {submitting ? "Actualizando..." : "Cambiar contrasena"}
+                </Button>
+              </form>
+            ) : (
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => {
+                  clearFeedback()
+                  setActiveTab(value as AuthMode)
+                }}
+                className="gap-5"
+              >
               <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
                 <TabsTrigger value="login" className="rounded-xl py-2.5">
                   Ingresar
@@ -333,6 +630,10 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
                   <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
                     {submitting ? "Ingresando..." : "Iniciar sesion"}
+                  </Button>
+
+                  <Button type="button" variant="ghost" className="w-full" onClick={() => setActiveTab("forgot")}>
+                    Olvide mi contrasena
                   </Button>
                 </form>
               </TabsContent>
@@ -530,7 +831,8 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   </form>
                 </div>
               </TabsContent>
-            </Tabs>
+              </Tabs>
+            )}
           </CardContent>
         </Card>
       </section>

@@ -16,8 +16,21 @@ export interface AuthResponse {
   perfilPendiente: string | null
 }
 
+export interface AuthRegisterStartResponse {
+  usuarioId: number | null
+  mailUsuario: string
+  verificationRequired: boolean
+  message: string
+}
+
+export interface MessageResponse {
+  message?: string
+  mensaje?: string
+}
+
 export interface ErrorResponse {
   estado?: number
   error?: string
   mensaje?: string
+  message?: string
 }
