@@ -94,36 +94,42 @@ export default function AdminPerfilInicialPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(24,58,90,0.08),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)]">
-      <div className="mx-auto flex min-h-screen max-w-3xl items-center px-6 py-10">
-        <Card className="w-full rounded-[2rem] border border-slate-200/80 bg-white/95 shadow-sm">
+    <main className="min-h-screen bg-background">
+      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
+
+      <div className="relative mx-auto flex min-h-[calc(100vh-0.375rem)] max-w-3xl items-center px-6 py-10 overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-[40rem] rounded-full bg-gradient-to-br from-indigo-400/25 via-fuchsia-400/20 to-amber-300/15 blur-3xl" />
+
+        <Card className="relative w-full rounded-[2rem] border border-indigo-100 shadow-xl shadow-indigo-100/60">
           <CardHeader className="space-y-3">
-            <CardTitle className="text-3xl font-semibold tracking-tight text-slate-950">Perfil inicial de administrador</CardTitle>
-            <CardDescription className="text-base leading-6 text-slate-600">
+            <CardTitle className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+              Perfil inicial de administrador
+            </CardTitle>
+            <CardDescription className="text-base leading-6 text-muted-foreground">
               Tu cuenta ya está autenticada en seguridad. Falta completar el perfil local de PALA para entrar al panel principal.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {errorMessage && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="rounded-2xl">
                 <AlertTitle>No se pudo completar el perfil</AlertTitle>
                 <AlertDescription>{errorMessage}</AlertDescription>
               </Alert>
             )}
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3 text-sm text-foreground">
               Mail autenticado: {session.mailUsuario}
             </div>
 
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="admin-nombre">Nombre</Label>
-                <Input id="admin-nombre" value={nombreAdministrador} onChange={(event) => setNombreAdministrador(event.target.value)} required />
+                <Input id="admin-nombre" className="h-11" value={nombreAdministrador} onChange={(event) => setNombreAdministrador(event.target.value)} required />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="admin-apellido">Apellido</Label>
-                <Input id="admin-apellido" value={apellidoAdministrador} onChange={(event) => setApellidoAdministrador(event.target.value)} required />
+                <Input id="admin-apellido" className="h-11" value={apellidoAdministrador} onChange={(event) => setApellidoAdministrador(event.target.value)} required />
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -131,6 +137,7 @@ export default function AdminPerfilInicialPage() {
                 <Input
                   id="admin-legajo"
                   inputMode="numeric"
+                  className="h-11"
                   value={legajoAdministrador}
                   onChange={(event) => setLegajoAdministrador(event.target.value)}
                   required
@@ -138,7 +145,11 @@ export default function AdminPerfilInicialPage() {
               </div>
 
               <div className="md:col-span-2">
-                <Button type="submit" disabled={submitting} className="h-11 w-full rounded-xl">
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                >
                   {submitting ? "Guardando..." : "Continuar al panel"}
                 </Button>
               </div>

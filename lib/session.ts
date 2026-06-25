@@ -24,3 +24,10 @@ export function authHeader(session: AuthResponse): Record<string, string> {
   if (!session.token) return {}
   return { Authorization: `${session.tipo} ${session.token}` }
 }
+
+export function resolverRutaPerfil(session: AuthResponse | null): "/perfil" | "/admin/perfil" | null {
+  if (!session) return null
+  if (session.permisos.includes("VER_PERFIL_POSTULANTE")) return "/perfil"
+  if (session.permisos.includes("VER_PERFIL_ADMINISTRADOR")) return "/admin/perfil"
+  return null
+}

@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import type { Aviso, AvisoDetalleApi, AvisoResumenApi } from "@/types/avisos"
 import { mapAvisoDetalle, mapAvisoResumen } from "@/lib/avisos-mapper"
-import { authHeader, clearSession, getSession } from "@/lib/session"
+import { authHeader, clearSession, getSession, resolverRutaPerfil } from "@/lib/session"
+import type { AuthResponse } from "@/types/auth"
 
 type Vista = "lista" | "detalle" | "salir"
 
 export default function VerAvisosPage() {
   const router = useRouter()
+  const [session, setSession] = useState<AuthResponse | null>(null)
   const [vista, setVista] = useState<Vista>("lista")
   const [avisos, setAvisos] = useState<Aviso[]>([])
   const [avisoActual, setAvisoActual] = useState<Aviso | null>(null)
@@ -24,13 +26,14 @@ export default function VerAvisosPage() {
   const [mensajeSalida, setMensajeSalida] = useState<string | null>(null)
 
   useEffect(() => {
-    const session = getSession()
-    if (!session || !session.permisos.includes("VER_AVISOS")) {
+    const currentSession = getSession()
+    if (!currentSession || !currentSession.permisos.includes("VER_AVISOS")) {
       router.replace("/login")
       return
     }
+    setSession(currentSession)
 
-    fetch("/api/pala/avisos", { headers: authHeader(session) })
+    fetch("/api/pala/avisos", { headers: authHeader(currentSession) })
       .then(async (response) => {
         if (response.status === 401) {
           clearSession()
@@ -87,6 +90,12 @@ export default function VerAvisosPage() {
     setTimeout(() => router.replace("/login"), 500)
   }
 
+  const rutaPerfil = resolverRutaPerfil(session)
+
+  const handleIrAPerfil = () => {
+    if (rutaPerfil) router.push(rutaPerfil)
+  }
+
   if (vista === "salir") {
     return (
       <main className="min-h-screen bg-background p-6 flex items-center justify-center">
@@ -112,7 +121,9 @@ export default function VerAvisosPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
+
+      <header className="sticky top-0 z-50 border-b border-indigo-100 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Image
             src="/logo-pala.jpeg"
@@ -122,17 +133,19 @@ export default function VerAvisosPage() {
             className="h-12 w-auto object-contain"
           />
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative hover:bg-indigo-50 hover:text-indigo-600">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white text-xs flex items-center justify-center">
                 3
               </span>
               <span className="sr-only">Notificaciones</span>
             </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Perfil</span>
-            </Button>
+            {rutaPerfil && (
+              <Button variant="ghost" size="icon" onClick={handleIrAPerfil} className="hover:bg-indigo-50 hover:text-indigo-600">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Perfil</span>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -146,9 +159,13 @@ export default function VerAvisosPage() {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Avisos disponibles</h1>
+      <section className="relative max-w-6xl mx-auto p-6 space-y-6">
+        <div className="pointer-events-none absolute -top-10 right-0 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/15 via-fuchsia-400/10 to-transparent blur-3xl" />
+
+        <div className="relative space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+            Avisos disponibles
+          </h1>
           <p className="text-muted-foreground mt-1">Explorá oportunidades y revisá el detalle de cada publicación.</p>
         </div>
 
