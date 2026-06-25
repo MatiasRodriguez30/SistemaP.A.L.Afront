@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AlertCircle, BriefcaseBusiness, GraduationCap, KeyRound, Mail, ShieldCheck } from "lucide-react"
+import { AlertCircle, BriefcaseBusiness, Eye, EyeOff, GraduationCap, KeyRound, Mail, ShieldCheck } from "lucide-react"
 
 import type { AuthRegisterStartResponse, AuthResponse, ErrorResponse, MessageResponse, PalaRol, TipoEstudianteOption } from "@/types/auth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -132,6 +132,11 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
+  const [showRegisterConfirmPassword, setShowRegisterConfirmPassword] = useState(false)
+  const [showRecoveryPassword, setShowRecoveryPassword] = useState(false)
+  const [showRecoveryConfirmPassword, setShowRecoveryConfirmPassword] = useState(false)
 
   useEffect(() => {
     if (!errorMessage && !successMessage) return
@@ -177,6 +182,25 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     setErrorMessage(null)
     setSuccessMessage(null)
   }
+
+  const PasswordToggle = ({
+    visible,
+    onToggle,
+    label,
+  }: {
+    visible: boolean
+    onToggle: () => void
+    label: string
+  }) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-900"
+      aria-label={label}
+    >
+      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  )
 
   const persistSession = (authResponse: AuthResponse) => {
     window.localStorage.setItem(SESSION_KEY, JSON.stringify(authResponse))
@@ -549,26 +573,40 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="reset-password">Nueva contrasena</Label>
-                    <Input
-                      id="reset-password"
-                      type="password"
-                      value={recoveryForm.nuevaPassword}
-                      onChange={(event) => setRecoveryForm((current) => ({ ...current, nuevaPassword: event.target.value }))}
-                      className="h-11 border-slate-200 bg-slate-50"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="reset-password"
+                        type={showRecoveryPassword ? "text" : "password"}
+                        value={recoveryForm.nuevaPassword}
+                        onChange={(event) => setRecoveryForm((current) => ({ ...current, nuevaPassword: event.target.value }))}
+                        className="h-11 border-slate-200 bg-slate-50 pr-10"
+                        required
+                      />
+                      <PasswordToggle
+                        visible={showRecoveryPassword}
+                        onToggle={() => setShowRecoveryPassword((current) => !current)}
+                        label={showRecoveryPassword ? "Ocultar nueva contrasena" : "Mostrar nueva contrasena"}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="reset-confirm-password">Confirmar contrasena</Label>
-                    <Input
-                      id="reset-confirm-password"
-                      type="password"
-                      value={recoveryForm.confirmarNuevaPassword}
-                      onChange={(event) => setRecoveryForm((current) => ({ ...current, confirmarNuevaPassword: event.target.value }))}
-                      className="h-11 border-slate-200 bg-slate-50"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="reset-confirm-password"
+                        type={showRecoveryConfirmPassword ? "text" : "password"}
+                        value={recoveryForm.confirmarNuevaPassword}
+                        onChange={(event) => setRecoveryForm((current) => ({ ...current, confirmarNuevaPassword: event.target.value }))}
+                        className="h-11 border-slate-200 bg-slate-50 pr-10"
+                        required
+                      />
+                      <PasswordToggle
+                        visible={showRecoveryConfirmPassword}
+                        onToggle={() => setShowRecoveryConfirmPassword((current) => !current)}
+                        label={showRecoveryConfirmPassword ? "Ocultar confirmacion de contrasena" : "Mostrar confirmacion de contrasena"}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -618,12 +656,17 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                       <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <Input
                         id="login-password"
-                        type="password"
+                        type={showLoginPassword ? "text" : "password"}
                         value={loginForm.passwordUsuario}
                         onChange={(event) => setLoginForm((current) => ({ ...current, passwordUsuario: event.target.value }))}
                         placeholder="Ingrese su contrasena"
-                        className="h-11 border-slate-200 bg-slate-50 pl-10"
+                        className="h-11 border-slate-200 bg-slate-50 pl-10 pr-10"
                         required
+                      />
+                      <PasswordToggle
+                        visible={showLoginPassword}
+                        onToggle={() => setShowLoginPassword((current) => !current)}
+                        label={showLoginPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
                       />
                     </div>
                   </div>
@@ -699,26 +742,40 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
                       <div className="space-y-2">
                         <Label htmlFor="register-password">Contrasena</Label>
-                        <Input
-                          id="register-password"
-                          type="password"
-                          value={registerForm.passwordUsuario}
-                          onChange={(event) => updateRegisterField("passwordUsuario", event.target.value)}
-                          className="h-11 border-slate-200 bg-slate-50"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="register-password"
+                            type={showRegisterPassword ? "text" : "password"}
+                            value={registerForm.passwordUsuario}
+                            onChange={(event) => updateRegisterField("passwordUsuario", event.target.value)}
+                            className="h-11 border-slate-200 bg-slate-50 pr-10"
+                            required
+                          />
+                          <PasswordToggle
+                            visible={showRegisterPassword}
+                            onToggle={() => setShowRegisterPassword((current) => !current)}
+                            label={showRegisterPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                          />
+                        </div>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="register-confirm-password">Confirmar contrasena</Label>
-                        <Input
-                          id="register-confirm-password"
-                          type="password"
-                          value={registerForm.confirmarPassword}
-                          onChange={(event) => updateRegisterField("confirmarPassword", event.target.value)}
-                          className="h-11 border-slate-200 bg-slate-50"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="register-confirm-password"
+                            type={showRegisterConfirmPassword ? "text" : "password"}
+                            value={registerForm.confirmarPassword}
+                            onChange={(event) => updateRegisterField("confirmarPassword", event.target.value)}
+                            className="h-11 border-slate-200 bg-slate-50 pr-10"
+                            required
+                          />
+                          <PasswordToggle
+                            visible={showRegisterConfirmPassword}
+                            onToggle={() => setShowRegisterConfirmPassword((current) => !current)}
+                            label={showRegisterConfirmPassword ? "Ocultar confirmacion de contrasena" : "Mostrar confirmacion de contrasena"}
+                          />
+                        </div>
                       </div>
 
                       {registerForm.rolSolicitado === "RECLUTADOR" ? (
