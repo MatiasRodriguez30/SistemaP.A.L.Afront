@@ -22,15 +22,17 @@ export default function VerAvisosPage() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mensajeSalida, setMensajeSalida] = useState<string | null>(null)
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null)
 
   useEffect(() => {
-    const session = getSession()
-    if (!session || !session.permisos.includes("VER_AVISOS")) {
+    const currentSession = getSession()
+    if (!currentSession || !currentSession.permisos.includes("VER_AVISOS")) {
       router.replace("/login")
       return
     }
+    setSession(currentSession)
 
-    fetch("/api/pala/avisos", { headers: authHeader(session) })
+    fetch("/api/pala/avisos", { headers: authHeader(currentSession) })
       .then(async (response) => {
         if (response.status === 401) {
           clearSession()
@@ -45,6 +47,8 @@ export default function VerAvisosPage() {
       .catch(() => setError("No se pudieron cargar los avisos. Intente nuevamente más tarde."))
       .finally(() => setCargando(false))
   }, [router])
+
+  const puedeSolicitarAsociacion = Boolean(session?.permisos.includes("SOLICITAR_ASOCIACION_RECLUTADOR"))
 
   const handleSeleccionarAviso = async (nroAviso: number) => {
     const session = getSession()
@@ -80,6 +84,14 @@ export default function VerAvisosPage() {
     // El backend todavia no expone PostulacionController; el boton queda deshabilitado.
   }
 
+  const handlePrimaryAction = () => {
+    if (puedeSolicitarAsociacion) {
+      router.push("/solicitar-asociacion")
+      return
+    }
+    handlePostular()
+  }
+
   const handleSalir = () => {
     clearSession()
     setVista("salir")
@@ -104,8 +116,9 @@ export default function VerAvisosPage() {
       <AvisoDetalle
         aviso={avisoActual}
         onRegresar={handleRegresar}
-        onPostular={handlePostular}
-        postularDisabled
+        onPrimaryAction={handlePrimaryAction}
+        primaryActionLabel={puedeSolicitarAsociacion ? "Asóciate con una empresa" : "Postular"}
+        primaryActionDisabled={!puedeSolicitarAsociacion}
       />
     )
   }

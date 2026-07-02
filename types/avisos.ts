@@ -89,3 +89,26 @@ export interface AvisoDetalleApi extends AvisoResumenApi {
   fechaCreacionAviso: string
   imagenUrlAviso: string
 }
+
+export interface SolicitudAsociacionCreatePayload {
+  cuitEmpresaSolicitud: string
+  razonSocialEmpresaSolicitud?: string
+  mailEmpresaSolicitud?: string
+  telefonoEmpresaSolicitud?: string
+}
+
+export interface SolicitudAsociacionResponse {
+  id: number
+  cuitEmpresaSolicitud: string
+  razonSocialEmpresaSolicitud: string
+  mailEmpresaSolicitud: string
+  telefonoEmpresaSolicitud: string
+  estadoSolicitud: string
+  fechaEnvioSolicitud: string
+}
+
+export interface EmpresaActivaResponse {
+  id: number
+  cuitEmpresa: string
+  razonSocialEmpresa: string
+}

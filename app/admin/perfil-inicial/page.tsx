@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { authHeader } from "@/lib/session"
 
 const SESSION_KEY = "pala-auth-session"
 
@@ -64,7 +65,7 @@ export default function AdminPerfilInicialPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `${session.tipo} ${session.token}`,
+          ...authHeader(session),
         },
         body: JSON.stringify({
           administrador: {

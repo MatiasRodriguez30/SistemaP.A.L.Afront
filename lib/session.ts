@@ -24,7 +24,11 @@ export function clearSession() {
   window.localStorage.removeItem(SESSION_KEY)
 }
 
+function normalizeAccessToken(token: string): string {
+  return token.replace(/^Bearer\s+/i, "").trim()
+}
+
 export function authHeader(session: AuthResponse): Record<string, string> {
   if (!session.token) return {}
-  return { Authorization: `${session.tipo} ${session.token}` }
+  return { Authorization: `Bearer ${normalizeAccessToken(session.token)}` }
 }

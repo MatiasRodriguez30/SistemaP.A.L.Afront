@@ -14,18 +14,25 @@ import {
   ArrowLeft,
   Send,
   CalendarPlus,
-  Image as ImageIcon
+  Image as ImageIcon,
 } from "lucide-react"
 import { CARRERA_BADGE_CLASS, avisoAccentBarClass, tipoAvisoBadgeClass } from "@/lib/aviso-colors"
 
 interface AvisoDetalleProps {
   aviso: Aviso
   onRegresar: () => void
-  onPostular: (nroAviso: number) => void
-  postularDisabled?: boolean
+  onPrimaryAction: (nroAviso: number) => void
+  primaryActionLabel: string
+  primaryActionDisabled?: boolean
 }
 
-export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }: AvisoDetalleProps) {
+export function AvisoDetalle({
+  aviso,
+  onRegresar,
+  onPrimaryAction,
+  primaryActionLabel,
+  primaryActionDisabled,
+}: AvisoDetalleProps) {
   return (
     <Card className="max-w-4xl mx-auto overflow-hidden">
       <div className={`h-1.5 w-full bg-gradient-to-r ${avisoAccentBarClass(aviso.nroAviso)}`} />
@@ -38,15 +45,14 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Imagen del Aviso */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <ImageIcon className="h-4 w-4" />
             Imagen del Aviso
           </div>
           <div className="relative w-full h-64 rounded-lg overflow-hidden bg-muted">
-            <img 
-              src={aviso.imagenUrlAviso} 
+            <img
+              src={aviso.imagenUrlAviso}
               alt={aviso.nombreAviso}
               className="w-full h-full object-cover"
             />
@@ -55,17 +61,13 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
 
         <Separator />
 
-        {/* Descripción */}
         <div className="space-y-2">
           <h3 className="font-semibold">Descripción</h3>
-          <p className="text-muted-foreground leading-relaxed">
-            {aviso.descripcionAviso}
-          </p>
+          <p className="text-muted-foreground leading-relaxed">{aviso.descripcionAviso}</p>
         </div>
 
         <Separator />
 
-        {/* Información de la Empresa y Reclutador */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -94,7 +96,6 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
 
         <Separator />
 
-        {/* Fechas */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
@@ -106,7 +107,7 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
                 {new Date(aviso.fechaCreacionAviso).toLocaleDateString("es-AR", {
                   day: "numeric",
                   month: "long",
-                  year: "numeric"
+                  year: "numeric",
                 })}
               </p>
             </div>
@@ -122,7 +123,7 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
                 {new Date(aviso.fechaCierreAviso).toLocaleDateString("es-AR", {
                   day: "numeric",
                   month: "long",
-                  year: "numeric"
+                  year: "numeric",
                 })}
               </p>
             </div>
@@ -131,7 +132,6 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
 
         <Separator />
 
-        {/* Carreras */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-indigo-500" />
@@ -148,7 +148,6 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
 
         <Separator />
 
-        {/* Tipos y SubTipos de Aviso */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Tag className="h-5 w-5 text-fuchsia-500" />
@@ -157,9 +156,7 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
           <div className="space-y-4">
             {aviso.tiposAviso.map((tipo, index) => (
               <div key={index}>
-                <p className="text-sm font-medium text-foreground mb-2">
-                  {tipo.nombreTipoAviso}
-                </p>
+                <p className="text-sm font-medium text-foreground mb-2">{tipo.nombreTipoAviso}</p>
                 {tipo.subTipos.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {tipo.subTipos.map((subTipo, subIndex) => (
@@ -180,26 +177,22 @@ export function AvisoDetalle({ aviso, onRegresar, onPostular, postularDisabled }
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
-        <Button
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={onRegresar}
-        >
+        <Button variant="outline" className="w-full sm:w-auto" onClick={onRegresar}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Regresar
         </Button>
         <Button
           className={`w-full sm:w-auto ${
-            postularDisabled
+            primaryActionDisabled
               ? ""
               : "bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 border-0 text-white"
           }`}
-          onClick={() => onPostular(aviso.nroAviso)}
-          disabled={postularDisabled}
-          title={postularDisabled ? "Disponible próximamente" : undefined}
+          onClick={() => onPrimaryAction(aviso.nroAviso)}
+          disabled={primaryActionDisabled}
+          title={primaryActionDisabled ? "Disponible próximamente" : undefined}
         >
           <Send className="mr-2 h-4 w-4" />
-          {postularDisabled ? "Disponible próximamente" : "Postular"}
+          {primaryActionDisabled ? "Disponible próximamente" : primaryActionLabel}
         </Button>
       </CardFooter>
     </Card>
