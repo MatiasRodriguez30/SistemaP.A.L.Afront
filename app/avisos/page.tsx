@@ -24,8 +24,6 @@ export default function VerAvisosPage() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mensajeSalida, setMensajeSalida] = useState<string | null>(null)
-  const [session, setSession] = useState<ReturnType<typeof getSession>>(null)
-
   useEffect(() => {
     const currentSession = getSession()
     if (!currentSession || !currentSession.permisos.includes("VER_AVISOS")) {
