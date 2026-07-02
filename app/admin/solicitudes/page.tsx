@@ -96,7 +96,7 @@ export default function SolicitudesAdminPage() {
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr>{["N.º", "Fecha de envío", "Reclutador", "Empresa", "CUIT", "Estado", "Acción"].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
             <tbody className="divide-y">{filtradas.map(s => <tr key={s.id} className="hover:bg-slate-50/70">
               <td className="px-4 py-4 font-semibold">#{s.id}</td><td className="px-4 py-4 text-slate-600">{fmt.format(new Date(s.fechaEnvio))}</td><td className="px-4 py-4">{s.reclutador.nombre}</td><td className="px-4 py-4">{s.empresa.razonSocial}</td><td className="px-4 py-4 text-slate-600">{s.empresa.cuit}</td><td className="px-4 py-4"><EstadoBadge codigo={s.codigoEstado} nombre={s.estado} /></td>
-              <td className="px-4 py-4"><Button asChild size="sm" variant="outline"><Link href={`/admin/solicitudes/${s.id}`}>Ver detalle</Link></Button></td>
+              <td className="px-4 py-4"><Button asChild size="sm" variant="outline"><Link href={`/admin/solicitudes/${s.id}`}>{["ENVIADA", "EN_EVALUACION"].includes(s.codigoEstado) ? "Resolver solicitud" : "Ver detalle"}</Link></Button></td>
             </tr>)}</tbody>
           </table>
           {!filtradas.length && <p className="p-10 text-center text-sm text-slate-500">No hay solicitudes que coincidan con los filtros.</p>}

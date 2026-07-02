@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
 
 import type { AuthResponse } from "@/types/auth"
 import type { AdministradorPerfil } from "@/types/administrador"
@@ -13,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authHeader, clearSession, getSession } from "@/lib/session"
+import { AdminShell } from "@/components/admin-shell"
 
 export default function AdminPerfilPage() {
   const router = useRouter()
@@ -87,6 +86,9 @@ export default function AdminPerfilPage() {
   }
 
   if (cargando || !perfil) {
+    if (session) {
+      return <AdminShell mail={session.mailUsuario}><p className="text-sm text-slate-500">Cargando perfil...</p></AdminShell>
+    }
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground text-sm">Cargando perfil...</p>
@@ -95,16 +97,9 @@ export default function AdminPerfilPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
-
-      <div className="relative mx-auto flex min-h-[calc(100vh-0.375rem)] max-w-3xl flex-col gap-6 px-6 py-10 overflow-hidden">
+    <AdminShell mail={session?.mailUsuario ?? perfil.mailAdministrador}>
+      <div className="relative mx-auto flex max-w-3xl flex-col gap-6 overflow-hidden">
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-[40rem] rounded-full bg-gradient-to-br from-indigo-400/25 via-fuchsia-400/20 to-amber-300/15 blur-3xl" />
-
-        <Link href="/admin" className="relative flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-indigo-600">
-          <ArrowLeft className="h-4 w-4" />
-          Volver al panel
-        </Link>
 
         <Card className="relative rounded-[2rem] border border-indigo-100 shadow-xl shadow-indigo-100/60">
           <CardHeader className="space-y-3">
@@ -164,6 +159,6 @@ export default function AdminPerfilPage() {
           </CardContent>
         </Card>
       </div>
-    </main>
+    </AdminShell>
   )
 }
