@@ -5,9 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { AvisoCard } from "@/components/aviso-card"
 import { AvisoDetalle } from "@/components/aviso-detalle"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2, Bell, LogOut, Send, FileText, Paperclip, X, Search } from "lucide-react"
+import { AlertCircle, CheckCircle2, LogOut, Send, FileText, Paperclip, X, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
+import { NotificationBell } from "@/components/notification-bell"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -306,13 +307,7 @@ export default function VerAvisosPage() {
             className="h-12 w-auto object-contain"
           />
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative hover:bg-indigo-50 hover:text-indigo-600">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white text-xs flex items-center justify-center">
-                3
-              </span>
-              <span className="sr-only">Notificaciones</span>
-            </Button>
+            <NotificationBell />
             {rutaPerfil && <PostulanteProfileMenu rutaPerfil={rutaPerfil} />}
             <Button
               variant="ghost"

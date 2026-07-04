@@ -2,24 +2,27 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { BookOpen, Building2, ClipboardList, GitBranch, Library, Link2, LayoutDashboard, LogOut, UserCog, Users } from "lucide-react"
+import { Bell, BookOpen, Building2, ClipboardList, GitBranch, Library, Link2, LayoutDashboard, LogOut, UserCog, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { clearSession } from "@/lib/session"
+import { useNotificacionesNoLeidas } from "@/lib/use-notificaciones-no-leidas"
 
 export function AdminShell({ children, mail }: { children: React.ReactNode; mail: string }) {
   const pathname = usePathname()
   const router = useRouter()
+  const noLeidas = useNotificacionesNoLeidas()
   const items = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/solicitudes", label: "Solicitudes de asociación", icon: ClipboardList },
-    { href: "/admin/empresas", label: "Empresas", icon: Building2 },
-    { href: "/admin/usuarios", label: "Usuarios", icon: Users },
-    { href: "/admin/conexiones", label: "Conexiones", icon: Link2 },
-    { href: "/admin/carreras", label: "Carreras", icon: BookOpen },
-    { href: "/admin/estados", label: "Estados", icon: GitBranch },
-    { href: "/admin/catalogos", label: "Catálogos", icon: Library },
-    { href: "/admin/perfil", label: "Mi perfil", icon: UserCog },
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: 0 },
+    { href: "/admin/solicitudes", label: "Solicitudes de asociación", icon: ClipboardList, badge: 0 },
+    { href: "/admin/empresas", label: "Empresas", icon: Building2, badge: 0 },
+    { href: "/admin/usuarios", label: "Usuarios", icon: Users, badge: 0 },
+    { href: "/admin/conexiones", label: "Conexiones", icon: Link2, badge: 0 },
+    { href: "/admin/carreras", label: "Carreras", icon: BookOpen, badge: 0 },
+    { href: "/admin/estados", label: "Estados", icon: GitBranch, badge: 0 },
+    { href: "/admin/catalogos", label: "Catálogos", icon: Library, badge: 0 },
+    { href: "/notificaciones", label: "Notificaciones", icon: Bell, badge: noLeidas },
+    { href: "/admin/perfil", label: "Mi perfil", icon: UserCog, badge: 0 },
   ]
 
   return (
@@ -30,14 +33,18 @@ export function AdminShell({ children, mail }: { children: React.ReactNode; mail
           <p className="mt-2 text-xl font-semibold">Administración</p>
         </div>
         <nav className="grid gap-2">
-          {items.map(({ href, label, icon: Icon }) => {
+          {items.map(({ href, label, icon: Icon, badge }) => {
             const active = href === "/admin" ? pathname === href : pathname.startsWith(href)
             return (
               <Link key={href} href={href} className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors",
                 active ? "bg-violet-600 text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
               )}>
-                <Icon className="h-4 w-4" />{label}
+                <Icon className="h-4 w-4" />
+                <span className="flex-1">{label}</span>
+                {Boolean(badge) && (
+                  <span className="rounded-full bg-fuchsia-600 px-2 py-0.5 text-xs font-semibold text-white">{badge}</span>
+                )}
               </Link>
             )
           })}

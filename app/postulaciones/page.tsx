@@ -8,6 +8,7 @@ import { ArrowLeft, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PostulacionesTab } from "@/components/perfil/postulaciones-tab"
 import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
+import { NotificationBell } from "@/components/notification-bell"
 import type { AuthResponse } from "@/types/auth"
 import { clearSession, getSession } from "@/lib/session"
 
@@ -53,6 +54,7 @@ export default function MisPostulacionesPage() {
             <Button variant="ghost" onClick={() => router.push("/avisos")} className="hover:bg-indigo-50 hover:text-indigo-600">
               Avisos
             </Button>
+            <NotificationBell />
             <PostulanteProfileMenu rutaPerfil="/perfil" />
             <Button
               variant="ghost"

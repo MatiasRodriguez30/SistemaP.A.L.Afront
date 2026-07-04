@@ -15,6 +15,7 @@ import { DatosPersonalesTab } from "@/components/perfil/datos-personales-tab"
 import { CarrerasTab } from "@/components/perfil/carreras-tab"
 import { ArmarCvTab } from "@/components/perfil/armar-cv-tab"
 import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
+import { NotificationBell } from "@/components/notification-bell"
 
 export default function PerfilPostulantePage() {
   const router = useRouter()
@@ -75,6 +76,7 @@ export default function PerfilPostulantePage() {
             <Button variant="ghost" onClick={() => router.push("/avisos")} className="hover:bg-indigo-50 hover:text-indigo-600">
               Avisos
             </Button>
+            <NotificationBell />
             <PostulanteProfileMenu rutaPerfil="/perfil" />
             <Button
               variant="ghost"
