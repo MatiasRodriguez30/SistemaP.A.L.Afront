@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import Image from "next/image"
-import { LogOut } from "lucide-react"
+import { ArrowLeft, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,6 +14,7 @@ import { authHeader, clearSession, getSession } from "@/lib/session"
 import { DatosPersonalesTab } from "@/components/perfil/datos-personales-tab"
 import { CarrerasTab } from "@/components/perfil/carreras-tab"
 import { ArmarCvTab } from "@/components/perfil/armar-cv-tab"
+import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
 
 export default function PerfilPostulantePage() {
   const router = useRouter()
@@ -73,6 +75,7 @@ export default function PerfilPostulantePage() {
             <Button variant="ghost" onClick={() => router.push("/avisos")} className="hover:bg-indigo-50 hover:text-indigo-600">
               Avisos
             </Button>
+            <PostulanteProfileMenu rutaPerfil="/perfil" />
             <Button
               variant="ghost"
               size="icon"
@@ -90,6 +93,9 @@ export default function PerfilPostulantePage() {
         <div className="pointer-events-none absolute -top-10 right-0 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/15 via-fuchsia-400/10 to-transparent blur-3xl" />
 
         <div className="relative space-y-1">
+          <Link href="/avisos" className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-indigo-600">
+            <ArrowLeft className="h-4 w-4" /> Volver a avisos
+          </Link>
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
             Mi perfil
           </h1>

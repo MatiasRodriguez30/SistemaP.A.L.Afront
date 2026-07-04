@@ -1,13 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { AvisoCard } from "@/components/aviso-card"
 import { AvisoDetalle } from "@/components/aviso-detalle"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2, Bell, User, LogOut, Send, FileText, Paperclip, X } from "lucide-react"
+import { AlertCircle, CheckCircle2, Bell, LogOut, Send, FileText, Paperclip, X, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import Image from "next/image"
 import { sileo } from "sileo"
@@ -32,6 +35,10 @@ export default function VerAvisosPage() {
   const [descripcionPostulacion, setDescripcionPostulacion] = useState("")
   const [enviandoPostulacion, setEnviandoPostulacion] = useState(false)
   const [cvAlternativo, setCvAlternativo] = useState<File | null>(null)
+  const [busqueda, setBusqueda] = useState("")
+  const [clasificacionFiltro, setClasificacionFiltro] = useState("TODOS")
+  const [carreraFiltro, setCarreraFiltro] = useState("TODOS")
+  const [orden, setOrden] = useState<"recientes" | "antiguos">("recientes")
   useEffect(() => {
     const currentSession = getSession()
     if (!currentSession || !currentSession.permisos.includes("VER_AVISOS")) {
@@ -65,6 +72,49 @@ export default function VerAvisosPage() {
 
   const puedeSolicitarAsociacion = Boolean(session?.permisos.includes("SOLICITAR_ASOCIACION_RECLUTADOR"))
   const puedePostularse = Boolean(session?.permisos.includes("POSTULARSE_AVISO"))
+
+  const SEPARADOR_CLASIFICACION = "::"
+
+  const clasificacionesDisponibles = useMemo(() => {
+    const subTiposPorTipo = new Map<string, Set<string>>()
+    for (const aviso of avisos) {
+      for (const tipo of aviso.tiposAviso) {
+        const subTipos = subTiposPorTipo.get(tipo.nombreTipoAviso) ?? new Set<string>()
+        tipo.subTipos.forEach((subTipo) => subTipos.add(subTipo.nombreSubTipoAviso))
+        subTiposPorTipo.set(tipo.nombreTipoAviso, subTipos)
+      }
+    }
+    return Array.from(subTiposPorTipo.entries())
+      .map(([tipo, subTipos]) => ({ tipo, subTipos: Array.from(subTipos).sort() }))
+      .sort((a, b) => a.tipo.localeCompare(b.tipo))
+  }, [avisos])
+
+  const carrerasDisponibles = useMemo(
+    () => Array.from(new Set(avisos.flatMap((aviso) => aviso.carreras.map((carrera) => carrera.nombreCarrera)))).sort(),
+    [avisos],
+  )
+
+  const avisosFiltrados = useMemo(() => {
+    const [tipoFiltro, subTipoFiltro] =
+      clasificacionFiltro === "TODOS" ? [null, null] : clasificacionFiltro.split(SEPARADOR_CLASIFICACION)
+
+    const filtrados = avisos.filter((aviso) => {
+      const coincideBusqueda =
+        !busqueda.trim() || `${aviso.nombreAviso} ${aviso.empresa.nombreEmpresa}`.toLowerCase().includes(busqueda.trim().toLowerCase())
+      const coincideClasificacion =
+        !tipoFiltro ||
+        aviso.tiposAviso.some(
+          (tipo) => tipo.nombreTipoAviso === tipoFiltro && tipo.subTipos.some((subTipo) => subTipo.nombreSubTipoAviso === subTipoFiltro),
+        )
+      const coincideCarrera = carreraFiltro === "TODOS" || aviso.carreras.some((carrera) => carrera.nombreCarrera === carreraFiltro)
+      return coincideBusqueda && coincideClasificacion && coincideCarrera
+    })
+
+    return filtrados.sort((a, b) => {
+      const diferencia = new Date(a.fechaCierreAviso).getTime() - new Date(b.fechaCierreAviso).getTime()
+      return orden === "recientes" ? -diferencia : diferencia
+    })
+  }, [avisos, busqueda, clasificacionFiltro, carreraFiltro, orden])
 
   const handleSeleccionarAviso = async (nroAviso: number) => {
     const session = getSession()
@@ -149,10 +199,6 @@ export default function VerAvisosPage() {
   }
 
   const rutaPerfil = resolverRutaPerfil(session)
-
-  const handleIrAPerfil = () => {
-    if (rutaPerfil) router.push(rutaPerfil)
-  }
 
   if (vista === "salir") {
     return (
@@ -267,12 +313,7 @@ export default function VerAvisosPage() {
               </span>
               <span className="sr-only">Notificaciones</span>
             </Button>
-            {rutaPerfil && (
-              <Button variant="ghost" size="icon" onClick={handleIrAPerfil} className="hover:bg-indigo-50 hover:text-indigo-600">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Perfil</span>
-              </Button>
-            )}
+            {rutaPerfil && <PostulanteProfileMenu rutaPerfil={rutaPerfil} />}
             <Button
               variant="ghost"
               size="icon"
@@ -304,13 +345,61 @@ export default function VerAvisosPage() {
           </Alert>
         )}
 
+        {!cargando && avisos.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/30 p-4">
+            <div className="relative min-w-[220px] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                className="bg-background pl-9"
+                placeholder="Buscar por título o empresa"
+                value={busqueda}
+                onChange={(event) => setBusqueda(event.target.value)}
+              />
+            </div>
+            <Select value={clasificacionFiltro} onValueChange={setClasificacionFiltro}>
+              <SelectTrigger className="w-[200px] bg-background"><SelectValue placeholder="Clasificación" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TODOS">Todas las clasificaciones</SelectItem>
+                {clasificacionesDisponibles.map(({ tipo, subTipos }) => (
+                  <SelectGroup key={tipo}>
+                    <SelectLabel>{tipo}</SelectLabel>
+                    {subTipos.map((subTipo) => (
+                      <SelectItem key={subTipo} value={`${tipo}${SEPARADOR_CLASIFICACION}${subTipo}`}>
+                        {subTipo}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={carreraFiltro} onValueChange={setCarreraFiltro}>
+              <SelectTrigger className="w-[190px] bg-background"><SelectValue placeholder="Carrera" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TODOS">Todas las carreras</SelectItem>
+                {carrerasDisponibles.map((carrera) => (
+                  <SelectItem key={carrera} value={carrera}>{carrera}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={orden} onValueChange={(value) => setOrden(value as "recientes" | "antiguos")}>
+              <SelectTrigger className="w-[170px] bg-background"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recientes">Más recientes</SelectItem>
+                <SelectItem value="antiguos">Más antiguos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {cargando ? (
           <p className="text-muted-foreground">Cargando avisos...</p>
         ) : avisos.length === 0 && !error ? (
           <p className="text-muted-foreground">No hay avisos disponibles por el momento.</p>
+        ) : avisosFiltrados.length === 0 ? (
+          <p className="text-muted-foreground">Ningún aviso coincide con los filtros seleccionados.</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {avisos.map((aviso) => (
+            {avisosFiltrados.map((aviso) => (
               <AvisoCard
                 key={aviso.nroAviso}
                 aviso={aviso}

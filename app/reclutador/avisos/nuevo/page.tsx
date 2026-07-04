@@ -1,9 +1,10 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, Check, ChevronLeft, ChevronRight, FileImage, GraduationCap, Tags } from "lucide-react"
+import { ArrowLeft, Building2, Check, ChevronLeft, ChevronRight, FileImage, GraduationCap, Tags } from "lucide-react"
 import { sileo } from "sileo"
 import { ReclutadorShell } from "@/components/reclutador-shell"
 import { Badge } from "@/components/ui/badge"
@@ -32,7 +33,7 @@ export default function NuevoAvisoPage(){
  function toggleSub(tipo:number,sub:number){setTipos(v=>{const actuales=v[tipo]??[],n=actuales.includes(sub)?actuales.filter(x=>x!==sub):[...actuales,sub];return{...v,[tipo]:n}})}
  async function enviar(borrador:boolean){if(!session||!reclutador||!puedeCrear)return;sileo.promise((async()=>{setEnviando(true);const datos={nombreAviso:nombre.trim(),descripcionAviso:descripcion.trim(),fechaPublicacionAviso:null,fechaCierreAviso:new Date(`${fechaCierre}T23:59:59`).toISOString(),imagenUrlAviso:null,empresaId:Number(empresaId),guardarComoBorrador:borrador,carreras:seleccionCarreras.map(id=>({carreraId:id,prioridad:carreras[id]})),tiposAviso:seleccionTipos.map(([id,subs])=>({tipoAvisoId:Number(id),subTipoAvisoIds:subs}))};const form=new FormData();form.append("datos",new Blob([JSON.stringify(datos)],{type:"application/json"}));if(imagen)form.append("imagen",imagen);const r=await fetch(`/api/pala/reclutadores/${reclutador.id}/avisos`,{method:"POST",headers:authHeader(session),body:form}),b=await r.json();if(!r.ok)throw new Error(b.mensaje??"No se pudo crear el aviso");router.push("/reclutador");return b})().finally(()=>setEnviando(false)),{loading:{title:borrador?"Guardando borrador...":"Publicando aviso..."},success:{title:borrador?"Borrador guardado":"Aviso publicado"},error:{title:"No se pudo crear el aviso"}})}
  if(!session)return null
- return <ReclutadorShell mail={session.mailUsuario}><header className="mb-7"><p className="text-sm font-medium text-sky-600">Nuevo aviso</p><h1 className="mt-1 text-3xl font-semibold">Crear oportunidad laboral</h1><p className="mt-2 text-sm text-slate-500">Completá cada paso y revisá el resultado antes de publicar.</p></header>
+ return <ReclutadorShell mail={session.mailUsuario}><header className="mb-7"><Link href="/reclutador/avisos" className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-sky-600"><ArrowLeft className="h-4 w-4"/>Volver a mis avisos</Link><p className="text-sm font-medium text-sky-600">Nuevo aviso</p><h1 className="mt-1 text-3xl font-semibold">Crear oportunidad laboral</h1><p className="mt-2 text-sm text-slate-500">Completá cada paso y revisá el resultado antes de publicar.</p></header>
  <div className="mb-7 grid grid-cols-5 gap-2">{pasos.map((p,i)=><div key={p}><div className={`h-1.5 rounded-full ${i<=paso?"bg-sky-600":"bg-slate-200"}`}/><p className={`mt-2 hidden text-xs sm:block ${i===paso?"font-semibold text-sky-700":"text-slate-500"}`}>{i+1}. {p}</p></div>)}</div>
  {!puedeCrear&&<p className="mb-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">Tu rol no tiene el permiso CREAR_AVISO.</p>}
  <Card className="border-0 shadow-sm"><CardHeader><CardTitle>{pasos[paso]}</CardTitle></CardHeader><CardContent className="min-h-[390px]">
