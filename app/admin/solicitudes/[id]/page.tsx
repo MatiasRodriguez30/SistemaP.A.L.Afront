@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { use, useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Building2, Clock3, ExternalLink, History, Mail, Phone, PlusCircle, UserRound } from "lucide-react"
+import { ArrowLeft, Building2, Clock3, History, Mail, Phone, PlusCircle, UserRound } from "lucide-react"
 import { sileo } from "sileo"
 import { AdminShell } from "@/components/admin-shell"
 import { Button } from "@/components/ui/button"
@@ -87,13 +87,32 @@ export default function SolicitudDetallePage({ params }: { params: Promise<{ id:
     finally { setProcesando(false) }
   }
 
+  async function contactarEmpresa() {
+    if (!session || !solicitud) return
+    setProcesando(true); setError("")
+    try {
+      if (solicitud.codigoEstado === "ENVIADA") {
+        const tomarResponse = await fetch(`/api/pala/solicitudes-asociacion/${id}/tomar`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...authHeader(session) },
+          body: JSON.stringify({ observacionesInternas: observacion }),
+        })
+        const tomada = await tomarResponse.json()
+        if (!tomarResponse.ok) throw new Error(tomada.mensaje ?? "No se pudo tomar la solicitud")
+      }
+      const response = await fetch(`/api/pala/solicitudes-asociacion/${id}/contactar`, { method: "POST", headers: authHeader(session) })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.mensaje ?? "No se pudo enviar la confirmación")
+      setSolicitud(data)
+      sileo.success({ title: "Correo enviado", description: "La empresa recibió un enlace válido por 72 horas." })
+    } catch (err) { setError(err instanceof Error ? err.message : "No se pudo contactar a la empresa") }
+    finally { setProcesando(false) }
+  }
+
   if (!session || !solicitud) return error && session ? <AdminShell mail={session.mailUsuario}><p className="text-rose-600">{error}</p></AdminShell> : null
 
   const finalizada = ["ACEPTADA", "RECHAZADA", "RESUELTA"].includes(solicitud.codigoEstado)
   const puedeCrearEmpresa = session.permisos.includes("ABM_EMPRESA")
-  const asunto = encodeURIComponent(`Validación de solicitud de asociación #${solicitud.id}`)
-  const cuerpo = encodeURIComponent(`Hola,\n\nNos comunicamos desde PALA para validar una solicitud de asociación con ${solicitud.empresa.razonSocial}.\n\nDatos del reclutador:\nNombre: ${solicitud.reclutador.nombre}\nMail: ${solicitud.reclutador.mail}\nCUIL: ${solicitud.reclutador.cuil}\n\n¿Podrían confirmarnos si esta persona pertenece o está autorizada para publicar avisos laborales en representación de la empresa?\n\nMuchas gracias.`)
-  const mailto = `mailto:${solicitud.empresa.mail}?subject=${asunto}&body=${cuerpo}`
 
   return <AdminShell mail={session.mailUsuario}>
     <div className="mx-auto max-w-5xl">
@@ -106,13 +125,14 @@ export default function SolicitudDetallePage({ params }: { params: Promise<{ id:
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card className="border-0 shadow-sm"><CardHeader><CardTitle className="flex items-center gap-2"><UserRound className="h-5 w-5 text-violet-600" />Datos del reclutador</CardTitle></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2">
-          <Dato label="Nombre" value={solicitud.reclutador.nombre} /><Dato label="CUIL" value={solicitud.reclutador.cuil} /><Dato label="Mail" value={solicitud.reclutador.mail} className="sm:col-span-2" /><Dato label="Descripción" value={solicitud.reclutador.descripcion || "Sin descripción"} className="sm:col-span-2" />
+          <Dato label="Nombre" value={`${solicitud.reclutador.nombre} ${solicitud.reclutador.apellido??""}`.trim()} /><Dato label="CUIL" value={solicitud.reclutador.cuil} /><Dato label="Mail" value={solicitud.reclutador.mail} className="sm:col-span-2" /><Dato label="Descripción" value={solicitud.reclutador.descripcion || "Sin descripción"} className="sm:col-span-2" />
         </CardContent></Card>
 
         <Card className="border-0 shadow-sm"><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-violet-600" />Empresa solicitada</CardTitle><span className={`rounded-full px-3 py-1 text-xs font-medium ${solicitud.empresa.existente ? "bg-emerald-100 text-emerald-800" : "bg-violet-100 text-violet-800"}`}>{solicitud.empresa.existente ? "Empresa registrada en PALA" : "Empresa propuesta"}</span></div></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2">
           <Dato label="Razón social" value={solicitud.empresa.razonSocial} /><Dato label="CUIT" value={solicitud.empresa.cuit} /><Dato label="Mail" value={solicitud.empresa.mail} icon={Mail} /><Dato label="Teléfono" value={solicitud.empresa.telefono} icon={Phone} />
           <div className="flex flex-wrap gap-2 sm:col-span-2">
-            <Button asChild variant="outline" className="gap-2"><a href={mailto}><Mail className="h-4 w-4" />Contactar empresa<ExternalLink className="h-3.5 w-3.5" /></a></Button>
+            {["ENVIADA", "EN_EVALUACION"].includes(solicitud.codigoEstado) && <Button type="button" variant="outline" className="gap-2" onClick={contactarEmpresa} disabled={procesando||!solicitud.empresa.existente}><Mail className="h-4 w-4" />{procesando?"Enviando...":solicitud.fechaEnvioConfirmacion?"Reenviar confirmación":"Contactar empresa"}</Button>}
+            {finalizada && <p className="self-center text-xs text-slate-500">La solicitud ya está finalizada; no requiere contactar nuevamente.</p>}
             {!solicitud.empresa.existente && puedeCrearEmpresa && <CrearEmpresaDialog abierto={crearEmpresaAbierto} setAbierto={setCrearEmpresaAbierto} solicitud={solicitud} form={empresaForm} setForm={setEmpresaForm} crear={crearEmpresa} procesando={procesando} />}
             {!solicitud.empresa.existente && !puedeCrearEmpresa && <p className="self-center text-xs text-amber-700">Necesitás el permiso ABM_EMPRESA para registrarla.</p>}
           </div>
@@ -121,7 +141,8 @@ export default function SolicitudDetallePage({ params }: { params: Promise<{ id:
 
       <Card className="mt-5 border-0 shadow-sm"><CardHeader><CardTitle>Gestión de la solicitud</CardTitle></CardHeader><CardContent className="space-y-5">
         <div><Label htmlFor="observaciones">Observaciones internas</Label><Textarea id="observaciones" className="mt-2 min-h-28" value={observacion} onChange={event => setObservacion(event.target.value)} disabled={finalizada} placeholder="Información interna sobre la validación de la empresa..." /></div>
-        {solicitud.resueltaPor && <div className="rounded-xl bg-slate-50 p-4 text-sm"><p className="font-medium">Resuelta por {solicitud.resueltaPor.nombre} {solicitud.resueltaPor.apellido}</p><p className="mt-1 text-slate-500">{solicitud.fechaResolucion ? fmt.format(new Date(solicitud.fechaResolucion)) : "Resolución pendiente"}</p></div>}
+        {solicitud.tomadaPor && <div className="rounded-xl bg-slate-50 p-4 text-sm"><p className="font-medium">Tomada por {solicitud.tomadaPor.nombre} {solicitud.tomadaPor.apellido}</p>{solicitud.fechaEnvioConfirmacion&&<p className="mt-1 text-slate-500">Confirmación enviada el {fmt.format(new Date(solicitud.fechaEnvioConfirmacion))}</p>}</div>}
+        {solicitud.aceptadaPor && <div className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900"><p className="font-medium">Aceptada por: {solicitud.aceptadaPor==="EMPRESA"?"Empresa":`Administrador${solicitud.resueltaPor?` (${solicitud.resueltaPor.nombre} ${solicitud.resueltaPor.apellido})`:""}`}</p><p className="mt-1 text-emerald-700">{solicitud.fechaResolucion?fmt.format(new Date(solicitud.fechaResolucion)):""}</p></div>}
         <div className="flex flex-wrap gap-3">
           {solicitud.codigoEstado === "ENVIADA" && <Button onClick={() => ejecutar("tomar")} disabled={procesando}>Tomar solicitud</Button>}
           {solicitud.codigoEstado === "EN_EVALUACION" && <><Button onClick={() => ejecutar("aceptar")} disabled={procesando || !solicitud.empresa.existente} className="bg-emerald-600 hover:bg-emerald-700">Aceptar</Button><Button onClick={() => ejecutar("rechazar")} disabled={procesando} variant="destructive">Rechazar</Button></>}

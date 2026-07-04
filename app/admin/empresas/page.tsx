@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, Pencil, Plus, Power, PowerOff, Search } from "lucide-react"
+import { Building2, Pencil, Plus, PowerOff, Search } from "lucide-react"
 import { sileo } from "sileo"
 import { AdminShell } from "@/components/admin-shell"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
@@ -86,18 +86,18 @@ export default function EmpresasAdminPage() {
     finally { setProcesando(false) }
   }
 
-  async function cambiarEstado(empresa: EmpresaAdmin, reactivar: boolean) {
+  async function darDeBaja(empresa: EmpresaAdmin) {
     if (!session) return
     setProcesando(true); setError("")
     try {
-      const response = await fetch(`/api/pala/empresas/${empresa.id}${reactivar ? "/reactivar" : ""}`, {
-        method: reactivar ? "PATCH" : "DELETE", headers: authHeader(session),
+      const response = await fetch(`/api/pala/empresas/${empresa.id}`, {
+        method: "DELETE", headers: authHeader(session),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.mensaje ?? "No se pudo actualizar el estado")
       setEmpresas(prev => prev.map(item => item.id === data.id ? data : item))
       setBaja(null)
-      sileo.success({ title: reactivar ? "Empresa reactivada" : "Empresa dada de baja" })
+      sileo.success({ title: "Empresa dada de baja" })
     } catch (err) { setError(err instanceof Error ? err.message : "No se pudo actualizar la empresa") }
     finally { setProcesando(false) }
   }
@@ -116,13 +116,13 @@ export default function EmpresasAdminPage() {
         <Select value={estado} onValueChange={value => { setEstado(value); setPagina(1) }}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="TODAS">Todas</SelectItem><SelectItem value="ACTIVAS">Activas</SelectItem><SelectItem value="INACTIVAS">Inactivas</SelectItem></SelectContent></Select>
       </div>
       <div className="overflow-x-auto rounded-xl border"><table className="w-full min-w-[900px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr>{["Razón social", "CUIT", "Mail", "Teléfono", "Estado", "Acciones"].map(item => <th key={item} className="px-4 py-3 font-medium">{item}</th>)}</tr></thead><tbody className="divide-y">
-        {visibles.map(empresa => <tr key={empresa.id} className="hover:bg-slate-50/70"><td className="px-4 py-4 font-medium">{empresa.razonSocialEmpresa}</td><td className="px-4 py-4 text-slate-600">{empresa.cuitEmpresa}</td><td className="px-4 py-4 text-slate-600">{empresa.mailEmpresa}</td><td className="px-4 py-4 text-slate-600">{empresa.telefonoEmpresa || "—"}</td><td className="px-4 py-4"><Badge className={empresa.fechaBajaEmpresa ? "border-0 bg-slate-200 text-slate-700" : "border-0 bg-emerald-100 text-emerald-800"}>{empresa.fechaBajaEmpresa ? "Inactiva" : "Activa"}</Badge></td><td className="px-4 py-4"><div className="flex gap-2"><Button size="sm" variant="outline" className="gap-1.5" onClick={() => abrirEdicion(empresa)}><Pencil className="h-3.5 w-3.5" />Editar</Button>{empresa.fechaBajaEmpresa ? <Button size="sm" variant="outline" className="gap-1.5 text-emerald-700" onClick={() => cambiarEstado(empresa, true)}><Power className="h-3.5 w-3.5" />Reactivar</Button> : <Button size="sm" variant="outline" className="gap-1.5 text-rose-700" onClick={() => setBaja(empresa)}><PowerOff className="h-3.5 w-3.5" />Dar de baja</Button>}</div></td></tr>)}
+        {visibles.map(empresa => <tr key={empresa.id} className="hover:bg-slate-50/70"><td className="px-4 py-4 font-medium">{empresa.razonSocialEmpresa}</td><td className="px-4 py-4 text-slate-600">{empresa.cuitEmpresa}</td><td className="px-4 py-4 text-slate-600">{empresa.mailEmpresa}</td><td className="px-4 py-4 text-slate-600">{empresa.telefonoEmpresa || "—"}</td><td className="px-4 py-4"><Badge className={empresa.fechaBajaEmpresa ? "border-0 bg-slate-200 text-slate-700" : "border-0 bg-emerald-100 text-emerald-800"}>{empresa.fechaBajaEmpresa ? "Inactiva" : "Activa"}</Badge></td><td className="px-4 py-4"><div className="flex gap-2">{empresa.fechaBajaEmpresa ? <span className="text-xs text-slate-500">Baja definitiva</span> : <><Button size="sm" variant="outline" className="gap-1.5" onClick={() => abrirEdicion(empresa)}><Pencil className="h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="gap-1.5 text-rose-700" onClick={() => setBaja(empresa)}><PowerOff className="h-3.5 w-3.5" />Dar de baja</Button></>}</div></td></tr>)}
       </tbody></table>{!visibles.length && <p className="p-10 text-center text-sm text-slate-500">No hay empresas que coincidan con los filtros.</p>}</div>
       <div className="mt-4 flex items-center justify-between text-sm text-slate-500"><span>{filtradas.length} empresa{filtradas.length === 1 ? "" : "s"}</span><div className="flex items-center gap-3"><Button size="sm" variant="outline" disabled={pagina <= 1} onClick={() => setPagina(prev => prev - 1)}>Anterior</Button><span>Página {Math.min(pagina, paginas)} de {paginas}</span><Button size="sm" variant="outline" disabled={pagina >= paginas} onClick={() => setPagina(prev => prev + 1)}>Siguiente</Button></div></div>
     </CardContent></Card>
 
     <EmpresaDialog abierto={dialogo} setAbierto={setDialogo} editando={editando} form={form} setForm={setForm} guardar={guardar} procesando={procesando} />
-    <AlertDialog open={Boolean(baja)} onOpenChange={open => !open && setBaja(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Dar de baja la empresa?</AlertDialogTitle><AlertDialogDescription>{baja?.razonSocialEmpresa} dejará de aparecer como empresa activa. Sus datos y su historial se conservarán.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction className="bg-rose-600 hover:bg-rose-700" disabled={procesando} onClick={() => baja && cambiarEstado(baja, false)}>Dar de baja</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <AlertDialog open={Boolean(baja)} onOpenChange={open => !open && setBaja(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Dar de baja la empresa?</AlertDialogTitle><AlertDialogDescription>{baja?.razonSocialEmpresa} dejará de aparecer como empresa activa. Sus datos y su historial se conservarán, pero la empresa no podrá reactivarse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction className="bg-rose-600 hover:bg-rose-700" disabled={procesando} onClick={() => baja && darDeBaja(baja)}>Dar de baja definitivamente</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </AdminShell>
 }
 
