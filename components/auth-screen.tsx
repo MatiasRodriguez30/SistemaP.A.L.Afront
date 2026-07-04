@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AlertCircle, BriefcaseBusiness, Eye, EyeOff, GraduationCap, KeyRound, Mail, ShieldCheck } from "lucide-react"
+import Link from "next/link"
+import { AlertCircle, BriefcaseBusiness, ChevronRight, Eye, EyeOff, GraduationCap, KeyRound, Mail, ShieldCheck } from "lucide-react"
 
 import type { AuthRegisterStartResponse, AuthResponse, ErrorResponse, MessageResponse, PalaRol, TipoEstudianteOption } from "@/types/auth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -11,10 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { SiteFooter } from "@/components/site-footer"
-import { SiteNavbar } from "@/components/site-navbar"
 
 type AuthMode = "login" | "register" | "verify" | "forgot" | "reset"
 
@@ -459,22 +458,82 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     }
   }
 
+  const isCredentialsMode = activeTab === "login" || activeTab === "register"
+
   return (
-    <main className="min-h-screen bg-background">
+    <main className="relative min-h-screen bg-[#f5f2fc] dark:bg-[#100b1e]">
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
 
-      <SiteNavbar />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 h-[38rem] w-[52rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-400/30 via-violet-400/25 to-fuchsia-300/15 blur-3xl" />
+        <div className="absolute bottom-[-10rem] right-[-8rem] h-[26rem] w-[26rem] rounded-full bg-gradient-to-br from-fuchsia-300/25 to-amber-200/15 blur-3xl" />
+        <div className="absolute bottom-[-12rem] left-[-10rem] h-[24rem] w-[24rem] rounded-full bg-gradient-to-tr from-sky-300/20 to-indigo-200/15 blur-3xl" />
+      </div>
 
-      <section className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-start justify-center overflow-hidden px-6 py-12 lg:items-center lg:px-8">
-        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-[40rem] rounded-full bg-gradient-to-br from-indigo-400/25 via-fuchsia-400/20 to-amber-300/15 blur-3xl" />
+      <section className="relative mx-auto flex min-h-[calc(100vh-0.375rem)] max-w-7xl flex-col items-center justify-center gap-6 px-6 py-14">
+        <div className="flex flex-col items-center gap-1 text-center">
+          <Link href="/" className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+            PALA
+          </Link>
+          <p className="text-sm text-muted-foreground">Plataforma de Acceso Laboral para Alumnos</p>
+        </div>
 
-        <Card className="relative w-full max-w-2xl rounded-[2rem] border border-indigo-100 shadow-xl shadow-indigo-100/60">
-          <CardHeader className="space-y-2 pb-2">
-            <CardTitle className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-              Iniciar sesión
+        {isCredentialsMode && (
+          <div className="inline-flex rounded-full bg-white/70 p-1 shadow-sm ring-1 ring-indigo-100 backdrop-blur dark:bg-white/10 dark:ring-white/10">
+            <button
+              type="button"
+              onClick={() => {
+                clearFeedback()
+                setActiveTab("login")
+              }}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                activeTab === "login"
+                  ? "bg-white text-indigo-700 shadow-sm dark:bg-white/15 dark:text-indigo-200"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Ingresar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                clearFeedback()
+                setActiveTab("register")
+              }}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                activeTab === "register"
+                  ? "bg-white text-indigo-700 shadow-sm dark:bg-white/15 dark:text-indigo-200"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Registrarse
+            </button>
+          </div>
+        )}
+
+        <Card
+          className={`relative w-full max-h-[85vh] overflow-y-auto rounded-[2rem] border-0 shadow-2xl shadow-indigo-200/40 dark:shadow-black/40 ${
+            activeTab === "register" ? "max-w-2xl" : "max-w-md"
+          }`}
+        >
+          <CardHeader className="space-y-1.5 pb-2 text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight text-violet-700 dark:text-violet-300">
+              {activeTab === "login"
+                ? "Iniciar sesión"
+                : activeTab === "register"
+                  ? "Crear cuenta"
+                  : activeTab === "verify"
+                    ? "Verificar correo"
+                    : activeTab === "forgot"
+                      ? "Recuperar contraseña"
+                      : "Nueva contraseña"}
             </CardTitle>
-            <CardDescription className="text-base leading-6 text-muted-foreground">
-              Acceda con su cuenta o registre un nuevo usuario segun el rol correspondiente.
+            <CardDescription className="text-sm leading-6 text-muted-foreground">
+              {activeTab === "login"
+                ? "Accedé a tu perfil de estudiante o gestioná tus vacantes de empresa. El futuro laboral comienza aquí."
+                : activeTab === "register"
+                  ? "Unite a la comunidad académica que conecta el talento con las mejores oportunidades del mercado."
+                  : null}
             </CardDescription>
           </CardHeader>
 
@@ -512,7 +571,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     value={verifyForm.codigo}
                     onChange={(event) => setVerifyForm({ codigo: event.target.value })}
                     placeholder="123456"
-                    className="h-11"
+                    className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                     required
                   />
                 </div>
@@ -521,7 +580,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="h-11 rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                    className="h-11 rounded-xl border-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:via-violet-500 hover:to-fuchsia-500"
                   >
                     {submitting ? "Verificando..." : "Verificar correo"}
                   </Button>
@@ -549,7 +608,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     value={recoveryForm.mailUsuario}
                     onChange={(event) => setRecoveryForm((current) => ({ ...current, mailUsuario: event.target.value }))}
                     placeholder="usuario@dominio.com"
-                    className="h-11"
+                    className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                     required
                   />
                 </div>
@@ -557,7 +616,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:via-violet-500 hover:to-fuchsia-500"
                 >
                   {submitting ? "Enviando..." : "Enviar codigo"}
                 </Button>
@@ -583,7 +642,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                     value={recoveryForm.codigo}
                     onChange={(event) => setRecoveryForm((current) => ({ ...current, codigo: event.target.value }))}
                     placeholder="123456"
-                    className="h-11"
+                    className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                     required
                   />
                 </div>
@@ -597,7 +656,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                         type={showRecoveryPassword ? "text" : "password"}
                         value={recoveryForm.nuevaPassword}
                         onChange={(event) => setRecoveryForm((current) => ({ ...current, nuevaPassword: event.target.value }))}
-                        className="h-11 pr-10"
+                        className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 pr-10 dark:border-white/10 dark:bg-white/5"
                         required
                       />
                       <PasswordToggle
@@ -616,7 +675,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                         type={showRecoveryConfirmPassword ? "text" : "password"}
                         value={recoveryForm.confirmarNuevaPassword}
                         onChange={(event) => setRecoveryForm((current) => ({ ...current, confirmarNuevaPassword: event.target.value }))}
-                        className="h-11 pr-10"
+                        className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 pr-10 dark:border-white/10 dark:bg-white/5"
                         required
                       />
                       <PasswordToggle
@@ -631,143 +690,106 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:via-violet-500 hover:to-fuchsia-500"
                 >
                   {submitting ? "Actualizando..." : "Cambiar contraseña"}
                 </Button>
               </form>
+            ) : activeTab === "login" ? (
+              <form className="space-y-5" onSubmit={handleLoginSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="login-mail">Correo electrónico</Label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400" />
+                    <Input
+                      id="login-mail"
+                      type="email"
+                      value={loginForm.mailUsuario}
+                      onChange={(event) => setLoginForm((current) => ({ ...current, mailUsuario: event.target.value }))}
+                      placeholder="ejemplo@universidad.edu"
+                      className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 pl-10 dark:border-white/10 dark:bg-white/5"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Contraseña</Label>
+                  <div className="relative">
+                    <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-400" />
+                    <Input
+                      id="login-password"
+                      type={showLoginPassword ? "text" : "password"}
+                      value={loginForm.passwordUsuario}
+                      onChange={(event) => setLoginForm((current) => ({ ...current, passwordUsuario: event.target.value }))}
+                      placeholder="Ingrese su contraseña"
+                      className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 pl-10 pr-10 dark:border-white/10 dark:bg-white/5"
+                      required
+                    />
+                    <PasswordToggle
+                      visible={showLoginPassword}
+                      onToggle={() => setShowLoginPassword((current) => !current)}
+                      label={showLoginPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:via-violet-500 hover:to-fuchsia-500"
+                >
+                  {submitting ? "Ingresando..." : "Iniciar sesión"}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearFeedback()
+                    setActiveTab("forgot")
+                  }}
+                  className="block w-full text-center text-sm font-medium text-violet-600 hover:underline dark:text-violet-300"
+                >
+                  Olvidé mi contraseña
+                </button>
+              </form>
             ) : (
-              <Tabs
-                value={activeTab}
-                onValueChange={(value) => {
-                  clearFeedback()
-                  setActiveTab(value as AuthMode)
-                }}
-                className="gap-5"
-              >
-              <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-indigo-50 p-1">
-                <TabsTrigger
-                  value="login"
-                  className="rounded-xl py-2.5 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300"
-                >
-                  Ingresar
-                </TabsTrigger>
-                <TabsTrigger
-                  value="register"
-                  className="rounded-xl py-2.5 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300"
-                >
-                  Registrarse
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="login">
-                <form className="space-y-5" onSubmit={handleLoginSubmit}>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-mail">Mail</Label>
-                    <div className="relative">
-                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400" />
-                      <Input
-                        id="login-mail"
-                        type="email"
-                        value={loginForm.mailUsuario}
-                        onChange={(event) => setLoginForm((current) => ({ ...current, mailUsuario: event.target.value }))}
-                        placeholder="usuario@dominio.com"
-                        className="h-11 pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Contraseña</Label>
-                    <div className="relative">
-                      <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-400" />
-                      <Input
-                        id="login-password"
-                        type={showLoginPassword ? "text" : "password"}
-                        value={loginForm.passwordUsuario}
-                        onChange={(event) => setLoginForm((current) => ({ ...current, passwordUsuario: event.target.value }))}
-                        placeholder="Ingrese su contraseña"
-                        className="h-11 pl-10 pr-10"
-                        required
-                      />
-                      <PasswordToggle
-                        visible={showLoginPassword}
-                        onToggle={() => setShowLoginPassword((current) => !current)}
-                        label={showLoginPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={submitting}
-                    className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
-                  >
-                    {submitting ? "Ingresando..." : "Iniciar sesion"}
-                  </Button>
-
-                  <Button type="button" variant="ghost" className="w-full" onClick={() => setActiveTab("forgot")}>
-                    Olvide mi contraseña
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="register">
-                <div className="space-y-4">
-                  <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
-                    <p className="text-sm font-semibold text-foreground">{currentRoleCopy.title}</p>
-                    <p className="text-sm leading-6 text-muted-foreground">{currentRoleCopy.description}</p>
-                  </div>
-
+              <div className="space-y-4">
                   <form className="space-y-5" onSubmit={handleRegisterSubmit}>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-3 md:col-span-2">
-                        <Label>Como te queres registrar?</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tipo de perfil</Label>
                         <div className="grid gap-3 md:grid-cols-2">
                           <button
                             type="button"
                             onClick={() => updateRegisterField("rolSolicitado", "POSTULANTE")}
-                            className={`rounded-2xl border p-4 text-left transition ${registerForm.rolSolicitado === "POSTULANTE" ? "border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white shadow-sm" : "border-border bg-muted/30 text-foreground hover:border-indigo-300"}`}
+                            className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${registerForm.rolSolicitado === "POSTULANTE" ? "border-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-sm" : "border-border bg-muted/30 text-foreground hover:border-indigo-300"}`}
                           >
-                            <div className="flex items-start gap-3">
-                              <GraduationCap className={`mt-0.5 h-5 w-5 ${registerForm.rolSolicitado === "POSTULANTE" ? "text-white" : "text-indigo-500"}`} />
-                              <div className="space-y-1">
-                                <p className="text-sm font-semibold">Postulante</p>
-                                <p className={`text-sm ${registerForm.rolSolicitado === "POSTULANTE" ? "text-white/80" : "text-muted-foreground"}`}>
-                                  Para explorar avisos y postularte.
-                                </p>
-                              </div>
-                            </div>
+                            <GraduationCap className={`h-6 w-6 ${registerForm.rolSolicitado === "POSTULANTE" ? "text-white" : "text-indigo-500"}`} />
+                            <p className="text-sm font-semibold">Postulante</p>
                           </button>
 
                           <button
                             type="button"
                             onClick={() => updateRegisterField("rolSolicitado", "RECLUTADOR")}
-                            className={`rounded-2xl border p-4 text-left transition ${registerForm.rolSolicitado === "RECLUTADOR" ? "border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white shadow-sm" : "border-border bg-muted/30 text-foreground hover:border-indigo-300"}`}
+                            className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${registerForm.rolSolicitado === "RECLUTADOR" ? "border-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-sm" : "border-border bg-muted/30 text-foreground hover:border-indigo-300"}`}
                           >
-                            <div className="flex items-start gap-3">
-                              <BriefcaseBusiness className={`mt-0.5 h-5 w-5 ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-white" : "text-violet-500"}`} />
-                              <div className="space-y-1">
-                                <p className="text-sm font-semibold">Reclutador</p>
-                                <p className={`text-sm ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-white/80" : "text-muted-foreground"}`}>
-                                  Para publicar avisos y gestionar postulaciones.
-                                </p>
-                              </div>
-                            </div>
+                            <BriefcaseBusiness className={`h-6 w-6 ${registerForm.rolSolicitado === "RECLUTADOR" ? "text-white" : "text-violet-500"}`} />
+                            <p className="text-sm font-semibold">Reclutador</p>
                           </button>
                         </div>
+                        <p className="text-sm leading-6 text-muted-foreground">{currentRoleCopy.description}</p>
                       </div>
 
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="register-mail">Mail de acceso</Label>
+                        <Label htmlFor="register-mail">Correo electrónico institucional o personal</Label>
                         <Input
                           id="register-mail"
                           type="email"
                           value={registerForm.mailUsuario}
                           onChange={(event) => updateRegisterField("mailUsuario", event.target.value)}
                           placeholder="usuario@dominio.com"
-                          className="h-11"
+                          className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                           required
                         />
                       </div>
@@ -780,7 +802,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                             type={showRegisterPassword ? "text" : "password"}
                             value={registerForm.passwordUsuario}
                             onChange={(event) => updateRegisterField("passwordUsuario", event.target.value)}
-                            className="h-11 pr-10"
+                            className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 pr-10 dark:border-white/10 dark:bg-white/5"
                             required
                           />
                           <PasswordToggle
@@ -799,7 +821,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                             type={showRegisterConfirmPassword ? "text" : "password"}
                             value={registerForm.confirmarPassword}
                             onChange={(event) => updateRegisterField("confirmarPassword", event.target.value)}
-                            className="h-11 pr-10"
+                            className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 pr-10 dark:border-white/10 dark:bg-white/5"
                             required
                           />
                           <PasswordToggle
@@ -818,7 +840,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               id="register-reclutador-nombre"
                               value={registerForm.nombreReclutador}
                               onChange={(event) => updateRegisterField("nombreReclutador", event.target.value)}
-                              className="h-11"
+                              className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                               required
                             />
                           </div>
@@ -830,14 +852,14 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               value={registerForm.cuilReclutador}
                               onChange={(event) => updateRegisterField("cuilReclutador", event.target.value)}
                               placeholder="20-12345678-3"
-                              className="h-11"
+                              className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                               required
                             />
                           </div>
 
                           <div className="space-y-2">
                             <Label htmlFor="register-reclutador-apellido">Apellido</Label>
-                            <Input id="register-reclutador-apellido" value={registerForm.apellidoReclutador} onChange={(event) => updateRegisterField("apellidoReclutador", event.target.value)} className="h-11" required />
+                            <Input id="register-reclutador-apellido" value={registerForm.apellidoReclutador} onChange={(event) => updateRegisterField("apellidoReclutador", event.target.value)} className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5" required />
                           </div>
 
                           <div className="space-y-2 md:col-span-2">
@@ -859,7 +881,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               id="register-postulante-nombre"
                               value={registerForm.nombrePostulante}
                               onChange={(event) => updateRegisterField("nombrePostulante", event.target.value)}
-                              className="h-11"
+                              className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                               required
                             />
                           </div>
@@ -870,7 +892,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               id="register-postulante-apellido"
                               value={registerForm.apellidoPostulante}
                               onChange={(event) => updateRegisterField("apellidoPostulante", event.target.value)}
-                              className="h-11"
+                              className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                               required
                             />
                           </div>
@@ -882,7 +904,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               type="date"
                               value={registerForm.fechaNacimientoPostulante}
                               onChange={(event) => updateRegisterField("fechaNacimientoPostulante", event.target.value)}
-                              className="h-11"
+                              className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                             />
                           </div>
 
@@ -893,7 +915,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               inputMode="numeric"
                               value={registerForm.legajoAcademicoPostulante}
                               onChange={(event) => updateRegisterField("legajoAcademicoPostulante", event.target.value)}
-                              className="h-11"
+                              className="h-11 rounded-xl border-indigo-100 bg-indigo-50/40 dark:border-white/10 dark:bg-white/5"
                               required
                             />
                           </div>
@@ -920,16 +942,27 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                         <Button
                           type="submit"
                           disabled={submitting}
-                          className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
+                          className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:via-violet-500 hover:to-fuchsia-500"
                         >
                           {submitting ? "Registrando..." : "Crear cuenta"}
+                          {!submitting && <ChevronRight className="h-4 w-4" />}
                         </Button>
                       </div>
                     </div>
                   </form>
-                </div>
-              </TabsContent>
-              </Tabs>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearFeedback()
+                      setActiveTab("login")
+                    }}
+                    className="block w-full text-center text-sm text-muted-foreground"
+                  >
+                    ¿Ya tenés una cuenta?{" "}
+                    <span className="font-medium text-violet-600 hover:underline dark:text-violet-300">Iniciá sesión aquí</span>
+                  </button>
+              </div>
             )}
           </CardContent>
         </Card>

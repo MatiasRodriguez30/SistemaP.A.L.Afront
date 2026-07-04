@@ -405,7 +405,7 @@ function VerAvisosContent() {
               />
             </div>
             <Select value={clasificacionFiltro} onValueChange={setClasificacionFiltro}>
-              <SelectTrigger className="w-[200px] bg-background"><SelectValue placeholder="Clasificación" /></SelectTrigger>
+              <SelectTrigger className="w-[230px] bg-background"><SelectValue placeholder="Clasificación" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="TODOS">Todas las clasificaciones</SelectItem>
                 {clasificacionesDisponibles.map(({ tipo, subTipos }) => (
