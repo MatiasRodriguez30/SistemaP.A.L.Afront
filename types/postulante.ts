@@ -39,6 +39,7 @@ export interface PostulantePerfil {
   id: number
   nombrePostulante: string
   apellidoPostulante: string
+  descripcionPostulante: string | null
   fechaNacimientoPostulante: string | null
   legajoAcademicoPostulante: number
   mailAcademicoPostulante: string | null

@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { AvisoCard } from "@/components/aviso-card"
 import { AvisoDetalle } from "@/components/aviso-detalle"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2, Bell, LogOut, Send, FileText, Paperclip, X, Search } from "lucide-react"
+import { AlertCircle, CheckCircle2, Bell, User, LogOut, Send, FileText, Paperclip, Sparkles, X, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -22,6 +22,10 @@ import type { AuthResponse } from "@/types/auth"
 type Vista = "lista" | "detalle" | "salir"
 
 export default function VerAvisosPage() {
+  return <Suspense fallback={<main className="min-h-screen bg-background p-6"><p className="text-sm text-muted-foreground">Cargando avisos...</p></main>}><VerAvisosContent /></Suspense>
+}
+
+function VerAvisosContent() {
   const router = useRouter()
   const avisoInicial = useSearchParams().get("aviso")
   const [session, setSession] = useState<AuthResponse | null>(null)
@@ -39,6 +43,8 @@ export default function VerAvisosPage() {
   const [clasificacionFiltro, setClasificacionFiltro] = useState("TODOS")
   const [carreraFiltro, setCarreraFiltro] = useState("TODOS")
   const [orden, setOrden] = useState<"recientes" | "antiguos">("recientes")
+  const [generandoCvIa, setGenerandoCvIa] = useState(false)
+  const [cvPreviewUrl, setCvPreviewUrl] = useState<string | null>(null)
   useEffect(() => {
     const currentSession = getSession()
     if (!currentSession || !currentSession.permisos.includes("VER_AVISOS")) {
@@ -150,7 +156,27 @@ export default function VerAvisosPage() {
     if (!puedePostularse) return
     setDescripcionPostulacion("")
     setCvAlternativo(null)
+    if (cvPreviewUrl) URL.revokeObjectURL(cvPreviewUrl)
+    setCvPreviewUrl(null)
     setPostulando(true)
+  }
+
+  const generarCvIa = async () => {
+    if (!session || !avisoActual || generandoCvIa) return
+    setGenerandoCvIa(true)
+    try {
+      const response = await fetch(`/api/pala/postulante/me/avisos/${avisoActual.nroAviso}/cv-ia`, { method: "POST", headers: authHeader(session) })
+      if (response.status === 401) throw new Error("La sesión venció. Volvé a iniciar sesión.")
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.mensaje ?? "No se pudo potenciar el CV") }
+      const blob = await response.blob()
+      const archivo = new File([blob], `cv_adaptado_${avisoActual.nroAviso}.pdf`, { type: "application/pdf" })
+      if (cvPreviewUrl) URL.revokeObjectURL(cvPreviewUrl)
+      setCvAlternativo(archivo)
+      setCvPreviewUrl(URL.createObjectURL(blob))
+      sileo.success({ title: "CV adaptado generado", description: "Revisalo antes de enviar la postulación." })
+    } catch (reason) {
+      sileo.error({ title: "No se pudo generar el CV", description: reason instanceof Error ? reason.message : "Intentá nuevamente." })
+    } finally { setGenerandoCvIa(false) }
   }
 
   const handlePrimaryAction = () => {
@@ -223,65 +249,92 @@ export default function VerAvisosPage() {
           primaryActionDisabled={!puedeSolicitarAsociacion && !puedePostularse}
         />
         <Dialog open={postulando} onOpenChange={setPostulando}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className={cvPreviewUrl ? "sm:max-w-6xl w-[95vw] max-h-[95vh] overflow-y-auto" : "sm:max-w-lg"}>
             <DialogHeader>
               <DialogTitle>Postularse a {avisoActual.nombreAviso}</DialogTitle>
               <DialogDescription>
                 Presentate brevemente y explicá por qué te interesa esta oportunidad. Se adjuntará el CV guardado en tu perfil.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-2">
-              <Textarea
-                value={descripcionPostulacion}
-                onChange={(event) => setDescripcionPostulacion(event.target.value.slice(0, 1000))}
-                placeholder="Escribí tu presentación para la empresa..."
-                className="min-h-36 resize-none"
-                autoFocus
-              />
-              <p className="text-right text-xs text-muted-foreground">{descripcionPostulacion.length}/1000</p>
-            </div>
-            <div className="space-y-3 rounded-xl border p-4">
-              <div className="flex items-start gap-3">
-                <FileText className="mt-0.5 h-5 w-5 text-indigo-600" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">CV para esta postulación</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {cvAlternativo ? "Se adjuntará este archivo solamente a esta postulación." : "Se usará una copia del CV guardado en tu perfil."}
-                  </p>
+
+            <div className={cvPreviewUrl ? "grid grid-cols-1 lg:grid-cols-5 gap-6 mt-2" : "space-y-4 mt-2"}>
+              {/* Panel Izquierdo: Formulario */}
+              <div className={cvPreviewUrl ? "lg:col-span-2 space-y-4 flex flex-col" : "space-y-4"}>
+                <div className="space-y-2">
+                  <Textarea
+                    value={descripcionPostulacion}
+                    onChange={(event) => setDescripcionPostulacion(event.target.value.slice(0, 1000))}
+                    placeholder="Escribí tu presentación para la empresa..."
+                    className={cvPreviewUrl ? "min-h-[160px] resize-none" : "min-h-36 resize-none"}
+                    autoFocus
+                  />
+                  <p className="text-right text-xs text-muted-foreground">{descripcionPostulacion.length}/1000</p>
+                </div>
+                
+                <div className="space-y-3 rounded-xl border p-4 bg-white/50">
+                  <div className="flex items-start gap-3">
+                    <FileText className="mt-0.5 h-5 w-5 text-indigo-600" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">CV para esta postulación</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {cvAlternativo ? "Se adjuntará este archivo solamente a esta postulación." : "Se usará una copia del CV guardado en tu perfil."}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Button type="button" variant="outline" className="w-full gap-2 border-violet-200 text-violet-700 bg-violet-50 hover:bg-violet-100" onClick={generarCvIa} disabled={generandoCvIa}>
+                    <Sparkles className="h-4 w-4" />{generandoCvIa ? "Analizando perfil y aviso..." : "Potenciar CV con IA para este aviso"}
+                  </Button>
+                  
+                  {cvAlternativo ? (
+                    <div className="flex items-center gap-2 rounded-lg bg-slate-50 border px-3 py-2 text-sm">
+                      <span className="min-w-0 flex-1 truncate font-medium">{cvAlternativo.name}</span>
+                      <span className="text-xs text-muted-foreground">{(cvAlternativo.size / 1024 / 1024).toFixed(2)} MB</span>
+                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => { setCvAlternativo(null); if (cvPreviewUrl) URL.revokeObjectURL(cvPreviewUrl); setCvPreviewUrl(null) }} title="Remover y usar el CV de mi perfil">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-3 text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
+                      <Paperclip className="h-4 w-4" />
+                      Adjuntar otro CV
+                      <input
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        className="sr-only"
+                        onChange={(event) => {
+                          const archivo = event.target.files?.[0] ?? null
+                          if (archivo && archivo.size > 5 * 1024 * 1024) {
+                            sileo.error({ title: "Archivo demasiado grande", description: "El CV no puede superar los 5 MB." })
+                            event.target.value = ""
+                            return
+                          }
+                          if (cvPreviewUrl) URL.revokeObjectURL(cvPreviewUrl)
+                          setCvPreviewUrl(null)
+                          setCvAlternativo(archivo)
+                        }}
+                      />
+                    </label>
+                  )}
                 </div>
               </div>
-              {cvAlternativo ? (
-                <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-                  <span className="min-w-0 flex-1 truncate">{cvAlternativo.name}</span>
-                  <span className="text-xs text-muted-foreground">{(cvAlternativo.size / 1024 / 1024).toFixed(2)} MB</span>
-                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCvAlternativo(null)} title="Usar el CV de mi perfil">
-                    <X className="h-4 w-4" />
-                  </Button>
+
+              {/* Panel Derecho: Visor de PDF */}
+              {cvPreviewUrl && (
+                <div className="lg:col-span-3 h-[65vh] lg:h-auto min-h-[500px]">
+                  <div className="h-full w-full overflow-hidden rounded-xl border-2 border-slate-200 bg-slate-100 shadow-sm flex flex-col">
+                    <div className="bg-slate-200 px-3 py-2 text-xs font-medium text-slate-600 border-b border-slate-200 flex items-center justify-between">
+                      <span>Vista previa - {cvAlternativo?.name || 'cv_adaptado.pdf'}</span>
+                    </div>
+                    <iframe title="Vista previa del CV adaptado" src={cvPreviewUrl} className="h-full w-full border-0 flex-1" />
+                  </div>
                 </div>
-              ) : (
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-3 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
-                  <Paperclip className="h-4 w-4" />
-                  Adjuntar otro CV
-                  <input
-                    type="file"
-                    accept="application/pdf,.pdf"
-                    className="sr-only"
-                    onChange={(event) => {
-                      const archivo = event.target.files?.[0] ?? null
-                      if (archivo && archivo.size > 5 * 1024 * 1024) {
-                        sileo.error({ title: "Archivo demasiado grande", description: "El CV no puede superar los 5 MB." })
-                        event.target.value = ""
-                        return
-                      }
-                      setCvAlternativo(archivo)
-                    }}
-                  />
-                </label>
               )}
             </div>
-            <DialogFooter>
+
+            <DialogFooter className={cvPreviewUrl ? "sm:mt-2" : "sm:mt-0"}>
               <Button variant="outline" onClick={() => setPostulando(false)} disabled={enviandoPostulacion}>Cancelar</Button>
-              <Button onClick={enviarPostulacion} disabled={!descripcionPostulacion.trim() || enviandoPostulacion}>
+              <Button onClick={enviarPostulacion} disabled={!descripcionPostulacion.trim() || enviandoPostulacion} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                 <Send className="mr-2 h-4 w-4" />
                 {enviandoPostulacion ? "Enviando..." : "Enviar postulación"}
               </Button>

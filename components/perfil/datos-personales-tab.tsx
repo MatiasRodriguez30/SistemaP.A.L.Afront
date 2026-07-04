@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -20,6 +21,7 @@ interface DatosPersonalesTabProps {
 export function DatosPersonalesTab({ perfil, session, onPerfilActualizado, onSessionExpirada }: DatosPersonalesTabProps) {
   const [nombrePostulante, setNombrePostulante] = useState(perfil.nombrePostulante)
   const [apellidoPostulante, setApellidoPostulante] = useState(perfil.apellidoPostulante)
+  const [descripcionPostulante, setDescripcionPostulante] = useState(perfil.descripcionPostulante ?? "")
   const [legajoAcademicoPostulante, setLegajoAcademicoPostulante] = useState(String(perfil.legajoAcademicoPostulante))
   const [mailAcademicoPostulante, setMailAcademicoPostulante] = useState(perfil.mailAcademicoPostulante ?? "")
   const [submitting, setSubmitting] = useState(false)
@@ -39,6 +41,7 @@ export function DatosPersonalesTab({ perfil, session, onPerfilActualizado, onSes
         body: JSON.stringify({
           nombrePostulante,
           apellidoPostulante,
+          descripcionPostulante: descripcionPostulante.trim() || null,
           legajoAcademicoPostulante: Number(legajoAcademicoPostulante),
           mailAcademicoPostulante: mailAcademicoPostulante || null,
         }),
@@ -130,6 +133,12 @@ export function DatosPersonalesTab({ perfil, session, onPerfilActualizado, onSes
           <div className="space-y-2 md:col-span-2">
             <Label>Tipo de estudiante</Label>
             <Input value={perfil.tipoEstudiante?.nombre ?? "No informado"} disabled />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="descripcion-postulante">Acerca de mí</Label>
+            <Textarea id="descripcion-postulante" className="min-h-32" maxLength={2000} value={descripcionPostulante} onChange={(e) => setDescripcionPostulante(e.target.value)} placeholder="Contá brevemente tu perfil, intereses y objetivos profesionales." />
+            <p className="text-right text-xs text-slate-500">{descripcionPostulante.length}/2000</p>
           </div>
 
           <div className="md:col-span-2">
