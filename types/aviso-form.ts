@@ -1,0 +1,2 @@
+export type ReclutadorActual={id:number;nombre:string;apellido:string|null;mail:string;cuil:string;descripcion:string|null}
+export type AvisoFormularioSoporte={empresasActivas:{id:number;cuitEmpresa:string;razonSocialEmpresa:string}[];carrerasActivas:{id:number;nombreCarrera:string;descripcionCarrera:string|null}[];tiposAvisoActivos:{id:number;nombreTipoAviso:string;descripcionTipoAviso:string|null;subTiposAviso:{id:number;nombreSubTipoAviso:string}[]}[]}

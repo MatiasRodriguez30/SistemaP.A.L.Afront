@@ -56,6 +56,7 @@ interface PostulanteFormState {
 
 interface ReclutadorFormState {
   nombreReclutador: string
+  apellidoReclutador: string
   cuilReclutador: string
   descripcionReclutador: string
 }
@@ -71,6 +72,7 @@ const emptyPostulante: PostulanteFormState = {
 
 const emptyReclutador: ReclutadorFormState = {
   nombreReclutador: "",
+  apellidoReclutador: "",
   cuilReclutador: "",
   descripcionReclutador: "",
 }
@@ -165,6 +167,7 @@ export default function PerfilInicialPage() {
         ? {
             reclutador: {
               nombreReclutador: reclutadorForm.nombreReclutador,
+              apellidoReclutador: reclutadorForm.apellidoReclutador,
               cuilReclutador: reclutadorForm.cuilReclutador,
               descripcionReclutador: reclutadorForm.descripcionReclutador || null,
             },
@@ -304,6 +307,11 @@ export default function PerfilInicialPage() {
                       className="h-11"
                       required
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="rec-apellido">Apellido</Label>
+                    <Input id="rec-apellido" value={reclutadorForm.apellidoReclutador} onChange={(e) => updateReclutador("apellidoReclutador", e.target.value)} placeholder="Pérez" className="h-11" required />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">

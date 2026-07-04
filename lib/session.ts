@@ -33,9 +33,10 @@ export function authHeader(session: AuthResponse): Record<string, string> {
   return { Authorization: `Bearer ${normalizeAccessToken(session.token)}` }
 }
 
-export function resolverRutaPerfil(session: AuthResponse | null): "/perfil" | "/admin/perfil" | null {
+export function resolverRutaPerfil(session: AuthResponse | null): "/perfil" | "/admin/perfil" | "/reclutador" | null {
   if (!session) return null
   if (session.permisos.includes("VER_PERFIL_POSTULANTE")) return "/perfil"
   if (session.permisos.includes("VER_PERFIL_ADMINISTRADOR")) return "/admin/perfil"
+  if (session.roles.some((rol) => rol.toUpperCase() === "RECLUTADOR")) return "/reclutador"
   return null
 }

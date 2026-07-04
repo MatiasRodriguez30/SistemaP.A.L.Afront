@@ -67,17 +67,14 @@ export default function BienvenidaPage() {
     setAvisoActual(null)
   }
 
-  const handlePostular = () => {
-    // El backend todavia no expone PostulacionController; el boton queda deshabilitado.
-  }
-
   if (vista === "detalle" && avisoActual) {
     return (
       <AvisoDetalle
         aviso={avisoActual}
         onRegresar={handleRegresar}
-        onPostular={handlePostular}
-        postularDisabled
+        onPrimaryAction={() => undefined}
+        primaryActionLabel="Iniciá sesión para postularte"
+        primaryActionDisabled
       />
     )
   }

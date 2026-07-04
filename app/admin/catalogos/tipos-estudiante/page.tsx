@@ -1,0 +1,26 @@
+"use client"
+import Link from "next/link"
+import { useCallback, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, GraduationCap, Pencil, Plus } from "lucide-react"
+import { sileo } from "sileo"
+import { AdminShell } from "@/components/admin-shell"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { authHeader, clearSession, getSession } from "@/lib/session"
+import type { AuthResponse } from "@/types/auth"
+import type { TipoEstudianteAdmin } from "@/types/catalogos"
+
+export default function TiposEstudiantePage(){
+ const router=useRouter(),[session,setSession]=useState<AuthResponse|null>(null),[tipos,setTipos]=useState<TipoEstudianteAdmin[]>([]),[editando,setEditando]=useState<TipoEstudianteAdmin|null|undefined>(undefined),[nombre,setNombre]=useState(""),[error,setError]=useState("")
+ const cargar=useCallback(async(s:AuthResponse)=>{const r=await fetch("/api/pala/admin/catalogos/tipos-estudiante",{headers:authHeader(s),cache:"no-store"});if(r.status===401){clearSession();router.replace("/login");return}const b=await r.json();if(!r.ok)throw new Error(b.mensaje??"No se pudo cargar el catálogo");setTipos(b)},[router])
+ useEffect(()=>{const s=getSession();if(!s||!s.roles.some(r=>r.toUpperCase()==="ADMINISTRADOR")){router.replace("/login");return}setSession(s);cargar(s).catch(e=>setError(e.message))},[cargar,router])
+ async function guardar(){if(!session)return;const esEdicion=Boolean(editando);const r=await fetch(esEdicion?`/api/pala/admin/catalogos/tipos-estudiante/${editando!.id}`:"/api/pala/admin/catalogos/tipos-estudiante",{method:esEdicion?"PATCH":"POST",headers:{...authHeader(session),"Content-Type":"application/json"},body:JSON.stringify({nombre})});const b=await r.json();if(!r.ok){sileo.error({title:"No se pudo guardar",description:b.mensaje});return}sileo.success({title:esEdicion?"Tipo actualizado":"Tipo creado"});setEditando(undefined);setNombre("");await cargar(session)}
+ async function disponibilidad(t:TipoEstudianteAdmin){if(!session)return;const activar=Boolean(t.fechaBaja),r=await fetch(`/api/pala/admin/catalogos/tipos-estudiante/${t.id}/disponibilidad`,{method:"PATCH",headers:{...authHeader(session),"Content-Type":"application/json"},body:JSON.stringify({activo:activar})});const b=await r.json();if(!r.ok){sileo.error({title:"No se pudo cambiar el estado",description:b.mensaje});return}sileo.success({title:activar?"Tipo reactivado":"Tipo dado de baja"});await cargar(session)}
+ if(!session)return null
+ return <AdminShell mail={session.mailUsuario}><header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><Link href="/admin/catalogos" className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-violet-600"><ArrowLeft className="h-4 w-4"/>Volver a catálogos</Link><h1 className="text-3xl font-semibold">Tipos de estudiante</h1><p className="mt-2 text-sm text-slate-500">Categorías disponibles durante el registro y la edición del perfil.</p></div><Button className="gap-2" onClick={()=>{setEditando(null);setNombre("")}}><Plus className="h-4 w-4"/>Nuevo tipo</Button></header>{error&&<p className="mb-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p>}<Card className="border-0 shadow-sm"><CardHeader><CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-violet-600"/>Catálogo</CardTitle></CardHeader><CardContent><div className="overflow-x-auto rounded-xl border"><table className="w-full min-w-[650px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Postulantes</th><th className="px-4 py-3">Acciones</th></tr></thead><tbody className="divide-y">{tipos.map(t=><tr key={t.id}><td className="px-4 py-4 font-medium">{t.nombre}</td><td className="px-4 py-4"><Badge className={t.fechaBaja?"border-0 bg-slate-200 text-slate-700":"border-0 bg-emerald-100 text-emerald-800"}>{t.fechaBaja?"Inactivo":"Activo"}</Badge></td><td className="px-4 py-4">{t.postulantes}</td><td className="px-4 py-4"><div className="flex gap-2"><Button size="sm" variant="outline" onClick={()=>{setEditando(t);setNombre(t.nombre)}}><Pencil className="mr-1 h-3.5 w-3.5"/>Editar</Button><Button size="sm" variant="outline" onClick={()=>disponibilidad(t)}>{t.fechaBaja?"Reactivar":"Dar de baja"}</Button></div></td></tr>)}</tbody></table></div></CardContent></Card><Dialog open={editando!==undefined} onOpenChange={o=>!o&&setEditando(undefined)}><DialogContent><DialogHeader><DialogTitle>{editando?"Editar tipo":"Nuevo tipo de estudiante"}</DialogTitle><DialogDescription>El nombre se mostrará en el registro y en el perfil.</DialogDescription></DialogHeader><div><Label>Nombre</Label><Input className="mt-2" value={nombre} onChange={e=>setNombre(e.target.value)}/></div><Button disabled={!nombre.trim()} onClick={guardar}>Guardar</Button></DialogContent></Dialog></AdminShell>
+}

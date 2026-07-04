@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { BookOpen, Building2, ClipboardList, Link2, LayoutDashboard, LogOut, UserCog } from "lucide-react"
+import { BookOpen, Building2, ClipboardList, GitBranch, Library, Link2, LayoutDashboard, LogOut, UserCog, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { clearSession } from "@/lib/session"
@@ -14,8 +14,11 @@ export function AdminShell({ children, mail }: { children: React.ReactNode; mail
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/solicitudes", label: "Solicitudes de asociación", icon: ClipboardList },
     { href: "/admin/empresas", label: "Empresas", icon: Building2 },
+    { href: "/admin/usuarios", label: "Usuarios", icon: Users },
     { href: "/admin/conexiones", label: "Conexiones", icon: Link2 },
     { href: "/admin/carreras", label: "Carreras", icon: BookOpen },
+    { href: "/admin/estados", label: "Estados", icon: GitBranch },
+    { href: "/admin/catalogos", label: "Catálogos", icon: Library },
     { href: "/admin/perfil", label: "Mi perfil", icon: UserCog },
   ]
 

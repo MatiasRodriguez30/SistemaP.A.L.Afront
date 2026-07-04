@@ -33,6 +33,7 @@ interface RegisterFormState {
   confirmarPassword: string
   rolSolicitado: PalaRol
   nombreReclutador: string
+  apellidoReclutador: string
   cuilReclutador: string
   descripcionReclutador: string
   nombrePostulante: string
@@ -66,6 +67,7 @@ const emptyRegisterForm: RegisterFormState = {
   confirmarPassword: "",
   rolSolicitado: "POSTULANTE",
   nombreReclutador: "",
+  apellidoReclutador: "",
   cuilReclutador: "",
   descripcionReclutador: "",
   nombrePostulante: "",
@@ -210,6 +212,11 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
       return
     }
 
+    if (esReclutador) {
+      router.push("/avisos")
+      return
+    }
+
     if (esPostulante || authResponse.permisos.includes("VER_AVISOS")) {
       router.push("/avisos")
     }
@@ -223,6 +230,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
           rolSolicitado: registerForm.rolSolicitado,
           reclutador: {
             nombreReclutador: registerForm.nombreReclutador,
+            apellidoReclutador: registerForm.apellidoReclutador,
             cuilReclutador: registerForm.cuilReclutador,
             descripcionReclutador: registerForm.descripcionReclutador || null,
           },
@@ -825,6 +833,11 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                               className="h-11"
                               required
                             />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="register-reclutador-apellido">Apellido</Label>
+                            <Input id="register-reclutador-apellido" value={registerForm.apellidoReclutador} onChange={(event) => updateRegisterField("apellidoReclutador", event.target.value)} className="h-11" required />
                           </div>
 
                           <div className="space-y-2 md:col-span-2">

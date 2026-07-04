@@ -24,6 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authHeader, getSession } from "@/lib/session"
+import { ReclutadorShell } from "@/components/reclutador-shell"
 
 function getMensaje(body: unknown, fallback: string): string {
   if (body && typeof body === "object") {
@@ -179,7 +180,7 @@ export default function SolicitarAsociacionPage() {
       })
 
       setForm(emptyForm)
-      router.push("/avisos")
+      router.push("/reclutador/empresas")
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo enviar la solicitud"
       sileo.error({
@@ -204,7 +205,8 @@ export default function SolicitarAsociacionPage() {
 
   if (!puedeSolicitarAsociacion) {
     return (
-      <main className="min-h-screen bg-background p-6 flex items-center justify-center">
+      <ReclutadorShell mail={session.mailUsuario}>
+        <div className="flex min-h-[70vh] items-center justify-center">
         <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -217,18 +219,19 @@ export default function SolicitarAsociacionPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push("/avisos")} className="w-full">
-              Volver a avisos
+            <Button onClick={() => router.push("/reclutador/empresas")} className="w-full">
+              Volver a mis empresas
             </Button>
           </CardContent>
         </Card>
-      </main>
+        </div>
+      </ReclutadorShell>
     )
   }
 
   return (
-    <main className="min-h-screen bg-background p-6">
-      <div className="mx-auto max-w-4xl space-y-6">
+    <ReclutadorShell mail={session.mailUsuario}>
+      <div className="max-w-5xl space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             Seleccione la empresa con la que desea asociarse para publicar avisos laborales
@@ -276,7 +279,7 @@ export default function SolicitarAsociacionPage() {
                   type="button"
                   variant="outline"
                   className="h-11 rounded-xl"
-                  onClick={() => router.push("/avisos")}
+                  onClick={() => router.push("/reclutador/empresas")}
                 >
                   Volver
                 </Button>
@@ -450,6 +453,6 @@ export default function SolicitarAsociacionPage() {
           </Card>
         )}
       </div>
-    </main>
+    </ReclutadorShell>
   )
 }
