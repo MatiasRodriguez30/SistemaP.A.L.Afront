@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react"
 import { CARRERA_BADGE_CLASS, avisoAccentBarClass, tipoAvisoBadgeClass } from "@/lib/aviso-colors"
+import { MarkdownDescription } from "@/components/markdown-description"
 
 interface AvisoDetalleProps {
   aviso: Aviso
@@ -37,6 +38,10 @@ export function AvisoDetalle({
     <Card className="max-w-4xl mx-auto overflow-hidden">
       <div className={`h-1.5 w-full bg-gradient-to-r ${avisoAccentBarClass(aviso.nroAviso)}`} />
       <CardHeader className="pb-4">
+        <Button variant="ghost" className="mb-3 w-fit -ml-3" onClick={onRegresar}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Regresar a avisos
+        </Button>
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold">{aviso.nombreAviso}</h2>
@@ -63,7 +68,7 @@ export function AvisoDetalle({
 
         <div className="space-y-2">
           <h3 className="font-semibold">Descripción</h3>
-          <p className="text-muted-foreground leading-relaxed">{aviso.descripcionAviso}</p>
+          <MarkdownDescription>{aviso.descripcionAviso}</MarkdownDescription>
         </div>
 
         <Separator />
@@ -177,10 +182,6 @@ export function AvisoDetalle({
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
-        <Button variant="outline" className="w-full sm:w-auto" onClick={onRegresar}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Regresar
-        </Button>
         <Button
           className={`w-full sm:w-auto ${
             primaryActionDisabled

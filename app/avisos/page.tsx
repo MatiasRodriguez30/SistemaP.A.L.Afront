@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2, LogOut, Send, FileText, Paperclip, Sparkles,
 import { Button } from "@/components/ui/button"
 import { PostulanteProfileMenu } from "@/components/postulante-profile-menu"
 import { NotificationBell } from "@/components/notification-bell"
+import { SiteFooter } from "@/components/site-footer"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -241,14 +242,18 @@ function VerAvisosContent() {
 
   if (vista === "detalle" && avisoActual) {
     return (
-      <>
-        <AvisoDetalle
+      <main className="flex min-h-screen flex-col bg-background">
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
+        <AvisosHeader rutaPerfil={rutaPerfil} onSalir={handleSalir} />
+        <section className="flex-1 px-6 py-8">
+          <AvisoDetalle
           aviso={avisoActual}
           onRegresar={handleRegresar}
           onPrimaryAction={handlePrimaryAction}
           primaryActionLabel={puedeSolicitarAsociacion ? "Asóciate con una empresa" : "Postularse"}
           primaryActionDisabled={!puedeSolicitarAsociacion && !puedePostularse}
-        />
+          />
+        </section>
         <Dialog open={postulando} onOpenChange={setPostulando}>
           <DialogContent className={cvPreviewUrl ? "sm:max-w-6xl w-[95vw] max-h-[95vh] overflow-y-auto" : "sm:max-w-lg"}>
             <DialogHeader>
@@ -342,7 +347,8 @@ function VerAvisosContent() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </>
+        <SiteFooter />
+      </main>
     )
   }
 
@@ -350,30 +356,7 @@ function VerAvisosContent() {
     <main className="min-h-screen bg-background">
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 via-fuchsia-500 via-amber-500 to-emerald-500" />
 
-      <header className="sticky top-0 z-50 border-b border-indigo-100 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Image
-            src="/logo-pala.jpeg"
-            alt="PALA - Plataforma de Acceso Laboral para Alumnos"
-            width={120}
-            height={60}
-            className="h-12 w-auto object-contain"
-          />
-          <div className="flex items-center gap-2">
-            <NotificationBell />
-            {rutaPerfil && <PostulanteProfileMenu rutaPerfil={rutaPerfil} />}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSalir}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="sr-only">Salir</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AvisosHeader rutaPerfil={rutaPerfil} onSalir={handleSalir} />
 
       <section className="relative max-w-6xl mx-auto p-6 space-y-6">
         <div className="pointer-events-none absolute -top-10 right-0 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/15 via-fuchsia-400/10 to-transparent blur-3xl" />
@@ -457,6 +440,25 @@ function VerAvisosContent() {
           </div>
         )}
       </section>
+      <SiteFooter />
     </main>
+  )
+}
+
+function AvisosHeader({ rutaPerfil, onSalir }: { rutaPerfil: "/perfil" | "/admin/perfil" | "/reclutador" | null; onSalir: () => void }) {
+  return (
+    <header className="sticky top-0 z-50 border-b border-indigo-100 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Image src="/logo-pala.jpeg" alt="PALA - Plataforma de Acceso Laboral para Alumnos" width={120} height={60} className="h-12 w-auto object-contain" />
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          {rutaPerfil && <PostulanteProfileMenu rutaPerfil={rutaPerfil} />}
+          <Button variant="ghost" size="icon" onClick={onSalir} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+            <LogOut className="h-5 w-5" />
+            <span className="sr-only">Salir</span>
+          </Button>
+        </div>
+      </div>
+    </header>
   )
 }
