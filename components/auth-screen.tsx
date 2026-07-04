@@ -285,7 +285,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     clearFeedback()
 
     if (registerForm.passwordUsuario !== registerForm.confirmarPassword) {
-      setErrorMessage("La confirmacion de contrasena no coincide.")
+      setErrorMessage("La confirmacion de contraseña no coincide.")
       return
     }
 
@@ -368,7 +368,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     clearFeedback()
 
     if (!pendingMail) {
-      setErrorMessage("No hay un correo pendiente de verificacion.")
+      setErrorMessage("No hay un correo pendiente de verificación.")
       return
     }
 
@@ -383,12 +383,12 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
       const body = await readResponseBody<MessageResponse>(response)
       if (!response.ok) {
-        throw new Error(getResponseMessage(body, "No se pudo reenviar el codigo"))
+        throw new Error(getResponseMessage(body, "No se pudo reenviar el código"))
       }
 
-      setSuccessMessage(getResponseMessage(body, "Enviamos un nuevo codigo de verificacion."))
+      setSuccessMessage(getResponseMessage(body, "Enviamos un nuevo código de verificación."))
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "No se pudo reenviar el codigo")
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo reenviar el código")
     } finally {
       setSubmitting(false)
     }
@@ -408,14 +408,14 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
       const body = await readResponseBody<MessageResponse>(response)
       if (!response.ok) {
-        throw new Error(getResponseMessage(body, "No se pudo enviar el codigo de recuperacion"))
+        throw new Error(getResponseMessage(body, "No se pudo enviar el codigo de recuperación"))
       }
 
       setPendingMail(recoveryForm.mailUsuario)
       setActiveTab("reset")
-      setSuccessMessage(getResponseMessage(body, "Si el correo existe, enviaremos un codigo para recuperar la contrasena."))
+      setSuccessMessage(getResponseMessage(body, "Si el correo existe, enviaremos un codigo para recuperar la contraseña."))
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "No se pudo iniciar la recuperacion")
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo iniciar la recuperación")
     } finally {
       setSubmitting(false)
     }
@@ -426,7 +426,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
     clearFeedback()
 
     if (recoveryForm.nuevaPassword !== recoveryForm.confirmarNuevaPassword) {
-      setErrorMessage("La confirmacion de contrasena no coincide.")
+      setErrorMessage("La confirmacion de contraseña no coincide.")
       return
     }
 
@@ -445,15 +445,15 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
       const body = await readResponseBody<MessageResponse>(response)
       if (!response.ok) {
-        throw new Error(getResponseMessage(body, "No se pudo actualizar la contrasena"))
+        throw new Error(getResponseMessage(body, "No se pudo actualizar la contraseña"))
       }
 
       setRecoveryForm(emptyRecoveryForm)
       setPendingMail("")
       setActiveTab("login")
-      setSuccessMessage(getResponseMessage(body, "La contrasena fue actualizada correctamente."))
+      setSuccessMessage(getResponseMessage(body, "La contraseña fue actualizada correctamente."))
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "No se pudo actualizar la contrasena")
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo actualizar la contraseña")
     } finally {
       setSubmitting(false)
     }
@@ -537,8 +537,8 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
             ) : activeTab === "forgot" ? (
               <form className="space-y-5" onSubmit={handleForgotPasswordSubmit}>
                 <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
-                  <p className="text-sm font-semibold text-foreground">Recuperar contrasena</p>
-                  <p className="text-sm leading-6 text-muted-foreground">Te enviaremos un codigo para cambiar tu contrasena.</p>
+                  <p className="text-sm font-semibold text-foreground">Recuperar contraseña</p>
+                  <p className="text-sm leading-6 text-muted-foreground">Te enviaremos un codigo para cambiar tu contraseña.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -569,7 +569,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
             ) : activeTab === "reset" ? (
               <form className="space-y-5" onSubmit={handleResetPasswordSubmit}>
                 <div className="space-y-2 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
-                  <p className="text-sm font-semibold text-foreground">Nueva contrasena</p>
+                  <p className="text-sm font-semibold text-foreground">Nueva contraseña</p>
                   <p className="text-sm leading-6 text-muted-foreground">
                     Ingresa el codigo enviado a {pendingMail || recoveryForm.mailUsuario}.
                   </p>
@@ -590,7 +590,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="reset-password">Nueva contrasena</Label>
+                    <Label htmlFor="reset-password">Nueva contraseña</Label>
                     <div className="relative">
                       <Input
                         id="reset-password"
@@ -603,13 +603,13 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                       <PasswordToggle
                         visible={showRecoveryPassword}
                         onToggle={() => setShowRecoveryPassword((current) => !current)}
-                        label={showRecoveryPassword ? "Ocultar nueva contrasena" : "Mostrar nueva contrasena"}
+                        label={showRecoveryPassword ? "Ocultar nueva contraseña" : "Mostrar nueva contraseña"}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="reset-confirm-password">Confirmar contrasena</Label>
+                    <Label htmlFor="reset-confirm-password">Confirmar contraseña</Label>
                     <div className="relative">
                       <Input
                         id="reset-confirm-password"
@@ -622,7 +622,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                       <PasswordToggle
                         visible={showRecoveryConfirmPassword}
                         onToggle={() => setShowRecoveryConfirmPassword((current) => !current)}
-                        label={showRecoveryConfirmPassword ? "Ocultar confirmacion de contrasena" : "Mostrar confirmacion de contrasena"}
+                        label={showRecoveryConfirmPassword ? "Ocultar confirmacion de contraseña" : "Mostrar confirmacion de contraseña"}
                       />
                     </div>
                   </div>
@@ -633,7 +633,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   disabled={submitting}
                   className="h-11 w-full rounded-xl border-0 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:from-indigo-500 hover:to-fuchsia-500"
                 >
-                  {submitting ? "Actualizando..." : "Cambiar contrasena"}
+                  {submitting ? "Actualizando..." : "Cambiar contraseña"}
                 </Button>
               </form>
             ) : (
@@ -679,7 +679,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Contrasena</Label>
+                    <Label htmlFor="login-password">Contraseña</Label>
                     <div className="relative">
                       <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-400" />
                       <Input
@@ -687,14 +687,14 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                         type={showLoginPassword ? "text" : "password"}
                         value={loginForm.passwordUsuario}
                         onChange={(event) => setLoginForm((current) => ({ ...current, passwordUsuario: event.target.value }))}
-                        placeholder="Ingrese su contrasena"
+                        placeholder="Ingrese su contraseña"
                         className="h-11 pl-10 pr-10"
                         required
                       />
                       <PasswordToggle
                         visible={showLoginPassword}
                         onToggle={() => setShowLoginPassword((current) => !current)}
-                        label={showLoginPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                        label={showLoginPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                       />
                     </div>
                   </div>
@@ -708,7 +708,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                   </Button>
 
                   <Button type="button" variant="ghost" className="w-full" onClick={() => setActiveTab("forgot")}>
-                    Olvide mi contrasena
+                    Olvide mi contraseña
                   </Button>
                 </form>
               </TabsContent>
@@ -773,7 +773,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="register-password">Contrasena</Label>
+                        <Label htmlFor="register-password">Contraseña</Label>
                         <div className="relative">
                           <Input
                             id="register-password"
@@ -786,13 +786,13 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                           <PasswordToggle
                             visible={showRegisterPassword}
                             onToggle={() => setShowRegisterPassword((current) => !current)}
-                            label={showRegisterPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                            label={showRegisterPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="register-confirm-password">Confirmar contrasena</Label>
+                        <Label htmlFor="register-confirm-password">Confirmar contraseña</Label>
                         <div className="relative">
                           <Input
                             id="register-confirm-password"
@@ -805,7 +805,7 @@ export function AuthScreen({ initialMode }: AuthScreenProps) {
                           <PasswordToggle
                             visible={showRegisterConfirmPassword}
                             onToggle={() => setShowRegisterConfirmPassword((current) => !current)}
-                            label={showRegisterConfirmPassword ? "Ocultar confirmacion de contrasena" : "Mostrar confirmacion de contrasena"}
+                            label={showRegisterConfirmPassword ? "Ocultar confirmacion de contraseña" : "Mostrar confirmacion de contraseña"}
                           />
                         </div>
                       </div>
