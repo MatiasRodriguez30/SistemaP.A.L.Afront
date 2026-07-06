@@ -1,84 +1,88 @@
-# PALA - Ver Avisos UI
+# Sistema P.A.L.A - Frontend
 
-Bienvenido al repositorio del frontend de **Ver Avisos** para el sistema **PALA (Plataforma de Acceso Laboral para Alumnos)**. Este proyecto es una interfaz de usuario construida con Next.js y React que permite a los alumnos visualizar y postularse a ofertas laborales.
+Bienvenido al repositorio del frontend del **Sistema P.A.L.A (Plataforma de Acceso Laboral para Alumnos)**. Este proyecto es una interfaz de usuario moderna que permite a los alumnos interactuar con el sistema, visualizar ofertas laborales y gestionar sus postulaciones.
 
-## Descripción
+---
 
-El módulo "Ver Avisos" es una aplicación web moderna que presenta un listado de oportunidades laborales. Los usuarios pueden:
-*   Ver una lista de avisos disponibles.
-*   Seleccionar un aviso para ver sus detalles completos.
-*   Iniciar el proceso de postulación a un aviso.
-*   Visualizar si su postulación fue exitosa o si requiere acciones adicionales (como subir un CV).
+## 🚀 Tutorial Básico: Cómo correr el proyecto localmente
 
-## Tecnologías Utilizadas
+Para probar el frontend en tu computadora, sigue estos pasos básicos.
 
-Este proyecto está construido sobre un stack tecnológico moderno enfocado en rendimiento y experiencia de desarrollador:
+### Requisitos Previos
+Asegúrate de tener instalado:
+*   [Node.js](https://nodejs.org/es/) (versión 18 o superior).
+*   **npm** (viene con Node.js).
 
-*   **Framework:** [Next.js](https://nextjs.org/) (App Router, versión 14/15+)
-*   **Librería UI:** [React](https://react.dev/)
-*   **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
-*   **Componentes Base:** [radix-ui](https://www.radix-ui.com/) y diseño inspirado en shadcn/ui.
-*   **Iconografía:** [Lucide React](https://lucide.dev/)
-*   **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+### Pasos para iniciar el Frontend
 
-## Requisitos Previos
+1. **Clonar el repositorio y abrir la carpeta:**
+   Abre una terminal y dirígete al directorio del proyecto:
+   ```bash
+   cd "SistemaP.A.L.A front"
+   ```
 
-Asegúrate de tener instalados los siguientes componentes en tu entorno local:
+2. **Instalar las dependencias:**
+   Ejecuta el siguiente comando para descargar todas las librerías necesarias:
+   ```bash
+   npm install
+   ```
 
-*   [Node.js](https://nodejs.org/es/) (versión 18 o superior recomendada).
-*   **pnpm**: Este proyecto utiliza `pnpm` como gestor de paquetes (indicado por el archivo `pnpm-lock.yaml`). Puedes instalarlo globalmente con `npm install -g pnpm`.
+3. **Configurar las variables de entorno:**
+   Verifica si existe un archivo llamado `.env` en la raíz del proyecto. Este archivo contiene la URL de conexión al backend (API). Si no existe, puedes crearlo basándote en un `.env.example` o configurar la URL del backend (por ejemplo: `NEXT_PUBLIC_API_URL=http://localhost:8080/api`).
 
-## Instrucciones de Instalación y Ejecución
+4. **Iniciar el servidor de desarrollo:**
+   Ejecuta el comando para levantar el frontend:
+   ```bash
+   npm run dev
+   ```
 
-Sigue estos pasos para levantar el entorno de desarrollo en tu máquina local:
+5. **Abrir la aplicación:**
+   Abre tu navegador y entra a: [http://localhost:3000](http://localhost:3000)
 
-### 1. Clonar el repositorio y navegar a la carpeta
+> [!NOTE]
+> **Sobre el Backend:** Para que el sistema funcione completamente (login, obtener avisos reales, etc.), necesitas tener corriendo también el proyecto Backend localmente. El frontend se conectará al backend mediante peticiones HTTP a la URL definida en tu archivo `.env`.
 
-Si aún no lo has hecho, abre tu terminal y navega hasta el directorio del proyecto:
+---
 
-```bash
-cd D:\PALASeminario\DiseñoPALA\ver-avisos-ui
-```
+## 📖 De qué trata el proyecto
 
-### 2. Instalar las dependencias
+El frontend del Sistema P.A.L.A está diseñado para ofrecer una experiencia fluida y moderna a los alumnos que buscan oportunidades laborales. 
+A través de esta plataforma, los usuarios pueden:
+*   **Ver Avisos:** Explorar un listado de oportunidades laborales disponibles.
+*   **Detalles del Aviso:** Seleccionar un aviso específico para leer todos los requisitos y descripciones.
+*   **Postulaciones:** Iniciar el proceso de postulación a los avisos que les interesen.
+*   **Seguimiento:** (Si aplica) Ver el estado de sus postulaciones o completar información adicional.
 
-Utiliza `pnpm` para instalar todas las dependencias necesarias definidas en el `package.json`:
+---
 
-```bash
-pnpm install
-```
-*(Si prefieres usar npm, puedes ejecutar `npm install`, pero se recomienda pnpm para respetar el lockfile del proyecto).*
+## 🔌 Cómo se conecta (Arquitectura)
 
-### 3. Iniciar el servidor de desarrollo
+Este proyecto (Frontend) funciona como una aplicación Cliente separada del Servidor (Backend).
+*   **Comunicación:** El frontend se comunica con el backend a través de una **API REST**.
+*   **Peticiones:** Utiliza funciones fetch o librerías de estado para hacer peticiones HTTP (GET, POST, PUT, DELETE) hacia los endpoints del backend.
+*   **Variables de Entorno:** La dirección base del backend se configura mediante un archivo `.env` para facilitar el cambio entre entornos (desarrollo local vs producción).
 
-Una vez instaladas las dependencias, inicia el servidor de desarrollo de Next.js:
+---
 
-```bash
-pnpm dev
-```
-*(O `npm run dev` si usaste npm).*
+## 🛠 Tecnologías Utilizadas
 
-### 4. Abrir la aplicación
+Este proyecto utiliza un stack moderno y eficiente basado en el ecosistema de JavaScript/TypeScript:
 
-Abre tu navegador web y visita la siguiente dirección:
+*   **Framework Principal:** [Next.js](https://nextjs.org/) (Versión 14/15+ con App Router)
+*   **Librería de UI:** [React 19](https://react.dev/)
+*   **Lenguaje:** [TypeScript](https://www.typescriptlang.org/) para un tipado estricto y seguro.
+*   **Estilos y Diseño:** 
+    *   [Tailwind CSS v4](https://tailwindcss.com/) para estilos utilitarios rápidos y responsivos.
+    *   Componentes base de [Radix UI](https://www.radix-ui.com/) y animaciones.
+*   **Manejo de Formularios:** `react-hook-form` y validación con `zod`.
+*   **Paquetería:** `npm` (Configurado como gestor principal).
 
-[http://localhost:3000](http://localhost:3000)
+---
 
-Deberías ver la interfaz de "Ver Avisos" cargada y lista para interactuar.
+## 📂 Estructura del Proyecto
 
-## Scripts Disponibles
-
-En el directorio del proyecto, puedes ejecutar:
-
-*   `pnpm dev`: Inicia la aplicación en modo desarrollo.
-*   `pnpm build`: Construye la aplicación optimizada para producción en la carpeta `.next`.
-*   `pnpm start`: Inicia el servidor de Next.js utilizando la versión de producción previamente construida (requiere ejecutar `build` antes).
-*   `pnpm lint`: Ejecuta ESLint para analizar el código en busca de problemas.
-
-## Estructura del Proyecto
-
-*   `/app`: Contiene las rutas y páginas de la aplicación según el App Router de Next.js (por ejemplo, `page.tsx` es la vista principal).
-*   `/components`: Componentes reutilizables de UI (tarjetas, botones, alertas).
-*   `/data`: Archivos con datos simulados (mocks) utilizados para la interfaz, como `avisos-mock.ts`.
-*   `/lib` y `/hooks`: Utilidades generales y hooks personalizados.
-*   `/public`: Archivos estáticos como imágenes y fuentes.
+*   `/app`: Contiene las rutas principales de la aplicación gracias al App Router de Next.js (ej. `page.tsx`, `layout.tsx`).
+*   `/components`: Componentes visuales reutilizables (botones, modales, tarjetas).
+*   `/lib` / `/hooks`: Funciones de utilidad y hooks de React personalizados.
+*   `/public`: Recursos estáticos como imágenes o logos.
+*   `/types`: Definiciones de tipos e interfaces de TypeScript compartidos.
