@@ -1,4 +1,4 @@
-"use client"
+"use client" 
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
@@ -99,7 +99,7 @@ export default function BienvenidaPage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Bienvenido a PALA
+                Bienvenido a P.A.L.A.
               </h1>
 
               <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">

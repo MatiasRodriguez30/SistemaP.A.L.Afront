@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Bell, BookOpen, Building2, ClipboardList, GitBranch, Library, Link2, LayoutDashboard, LogOut, UserCog, Users } from "lucide-react"
+import { BarChart3, Bell, BookOpen, Building2, ClipboardList, GitBranch, Library, Link2, LayoutDashboard, LogOut, UserCog, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { clearSession } from "@/lib/session"
@@ -14,6 +14,7 @@ export function AdminShell({ children, mail }: { children: React.ReactNode; mail
   const noLeidas = useNotificacionesNoLeidas()
   const items = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: 0 },
+    { href: "/admin/reportes", label: "Reportes", icon: BarChart3, badge: 0 },
     { href: "/admin/solicitudes", label: "Solicitudes de asociación", icon: ClipboardList, badge: 0 },
     { href: "/admin/empresas", label: "Empresas", icon: Building2, badge: 0 },
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, badge: 0 },
@@ -26,8 +27,8 @@ export function AdminShell({ children, mail }: { children: React.ReactNode; mail
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950 lg:grid lg:grid-cols-[260px_1fr]">
-      <aside className="border-b bg-slate-950 px-5 py-6 text-white lg:sticky lg:top-0 lg:h-screen lg:border-b-0">
+    <div className="min-h-screen bg-slate-50 text-slate-950 lg:grid lg:grid-cols-[260px_1fr] print:block">
+      <aside className="border-b bg-slate-950 px-5 py-6 text-white lg:sticky lg:top-0 lg:h-screen lg:border-b-0 print:hidden">
         <div className="mb-8 px-3">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">Sistema PALA</p>
           <p className="mt-2 text-xl font-semibold">Administración</p>

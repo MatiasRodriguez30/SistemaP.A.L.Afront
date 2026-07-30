@@ -10,6 +10,17 @@ import type { AuthResponse } from "@/types/auth"
 import type { DashboardAdmin } from "@/types/dashboard"
 
 const numberFormat = new Intl.NumberFormat("es-AR")
+const COLORES = [
+  "#7D3AED",
+  "#400E95",
+  "#B794F5",
+  "#2E0A6B",
+  "#9B6AF1",
+  "#6316E9",
+  "#D3BEF9",
+  "#5112BF",
+  "#EFE8FD",
+]
 
 export default function AdminPage() {
   const router = useRouter()
@@ -48,7 +59,7 @@ export default function AdminPage() {
 
   const cards = [
     { label: "Usuarios totales", value: dashboard?.usuariosTotales, detail: "Reclutadores + postulantes", icon: Users, tone: "bg-sky-50 text-sky-600" },
-    { label: "Reclutadores", value: dashboard?.reclutadores, detail: "Usuarios activos", icon: BriefcaseBusiness, tone: "bg-amber-50 text-amber-600" },
+    { label: "Reclutadores", value: dashboard?.reclutadores, detail: "Todos los reclutadores que se han registrado", icon: BriefcaseBusiness, tone: "bg-amber-50 text-amber-600" },
     { label: "Postulantes", value: dashboard?.postulantes, detail: "Estudiantes y graduados", icon: GraduationCap, tone: "bg-violet-50 text-violet-600" },
   ]
 
@@ -107,9 +118,10 @@ export default function AdminPage() {
             <div className="rounded-xl border border-dashed py-12 text-center text-sm text-slate-500">Todavía no hay postulantes asociados a carreras activas.</div>
           ) : (
             <div className="space-y-5">
-              {dashboard.postulantesPorCarrera.map((item) => {
+              {dashboard.postulantesPorCarrera.map((item, index) => {
                 const porcentaje = dashboard.postulantes > 0 ? Math.round((item.cantidad / dashboard.postulantes) * 100) : 0
                 const ancho = maximo > 0 ? Math.max(2, (item.cantidad / maximo) * 100) : 0
+                const colorBarra = COLORES[index % COLORES.length]
                 return (
                   <div key={item.carrera}>
                     <div className="mb-2 flex items-end justify-between gap-4 text-sm">
@@ -117,7 +129,7 @@ export default function AdminPage() {
                       <span className="shrink-0 text-xs text-slate-500"><b className="mr-2 text-slate-800">{numberFormat.format(item.cantidad)}</b>{porcentaje}%</span>
                     </div>
                     <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-violet-600 transition-[width]" style={{ width: `${ancho}%` }} />
+                      <div className="h-full rounded-full transition-[width]" style={{ width: `${ancho}%`, backgroundColor: colorBarra }} />
                     </div>
                   </div>
                 )
